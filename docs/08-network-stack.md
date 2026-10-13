@@ -122,6 +122,31 @@ REA analysis of [`ContentHandlerEEImpl::GetLiveViewJpeg`](../analysis/evidence/r
 
 The exact network framing is still unknown. `LiveViewLocator` proves that the server can construct or retrieve an IP/port/filename/URL tuple, while the content handlers prove JPEG delivery. The current static evidence does not distinguish HTTP, a Sony-specific HTTP-like stream, or another transport behind the content-handler framework.
 
+## 6. TLS crypto and large-file throughput
+
+`libNetService.so` contains the firmware's visible TLS adapter and a software crypto boundary. It exports wrappers for TLS initialization, handshake, record encryption/decryption, cipher-list selection, AES-128-CBC, RSA/PKCS#1 key operations, and the underlying `rijndaelEncrypt` routine. The wrapper evidence is [`rea-netservice-tls-encrypt.json`](../analysis/evidence/rea-netservice-tls-encrypt.json), [`rea-netservice-tls-decrypt.json`](../analysis/evidence/rea-netservice-tls-decrypt.json), [`rea-netservice-tls-set-cipher.json`](../analysis/evidence/rea-netservice-tls-set-cipher.json), [`rea-netservice-aes128-cbc-encrypt.json`](../analysis/evidence/rea-netservice-aes128-cbc-encrypt.json), and [`rea-netservice-crypto-cipher-encrypt.json`](../analysis/evidence/rea-netservice-crypto-cipher-encrypt.json).
+
+The static image does **not** contain a fixed bytes-per-second limiter for this path. The AES-CBC wrapper initializes a 16-byte key schedule, copies a 16-byte IV, and processes the input in 16-byte blocks. The generic cipher loop likewise scales with the number of blocks and has no visible sleep, timer, or byte quota. The RSA helpers are PKCS#1 operations used around key setup or authentication; RSA is not applied to every byte of a large file, so its cost is amortized after the TLS handshake.
+
+The TLS adapter does impose allocation policies, but these are not speed limits:
+
+- outbound encryption allocates `input_length + 300` bytes;
+- inbound decryption allocates `input_length * 3 + 1500` bytes.
+
+For a large transfer, the useful static upper-bound model is therefore:
+
+```text
+sustained throughput <= min(
+    effective WLAN/socket throughput,
+    software AES-CBC + TLS record throughput,
+    network-service consumer/producer throughput
+)
+```
+
+If the camera sends the file, the encrypting wrapper is the relevant allocation path. If the camera receives it, the decrypting wrapper's larger temporary allocation can increase memory pressure and reduce throughput for oversized records or chunks. Neither direction has a firmware-derived MB/s value in this static evidence. Excluding SD-card reads removes one possible term from the minimum, but a numeric limit still requires a camera-side benchmark with CPU utilization, TLS enabled/disabled comparisons, and several application chunk sizes.
+
+The phrase “AES-CBC-RSA” should be treated as shorthand here. The image proves RSA/PKCS#1 and AES-CBC support, but `tls_connection_set_cipher_list` forwards a caller-supplied list and the selected suite is not recovered. `TLS_RSA_WITH_AES_128_CBC_SHA` is therefore a plausible interpretation, not a confirmed 3.21 selection. The `tlsv1_client_*` core routines are undefined imports in this library, so their provider and complete record implementation remain unresolved. OpenSSL dependencies found in `wpa_supplicant` and other services do not prove that the large-file camera service uses OpenSSL.
+
 ## What this tells a feature porter
 
 The safest practical extension points are the upper boundaries:
@@ -132,11 +157,11 @@ The safest practical extension points are the upper boundaries:
 4. Use mDNS/UPnP registration only after the service name, port, URL, and session behavior are recovered from callers or a passive capture.
 5. Treat `libWlanControlCommon.so` as platform bring-up code; it is a poor first target for ordinary feature work.
 
-The main unknowns are now narrower: process ownership, caller arguments, service metadata, endpoint framing, and the cross-version stability of the message IDs and data structures. These are the next static and runtime probes, rather than a need to reverse the entire WLAN driver first.
+The main unknowns are now narrower: process ownership, caller arguments, service metadata, endpoint framing, selected TLS cipher suite, runtime TLS provider, measured crypto throughput, and the cross-version stability of the message IDs and data structures. These are the next static and runtime probes, rather than a need to reverse the entire WLAN driver first.
 
 ## Evidence and limitations
 
-- **Confirmed:** the libraries, hashes, dynamic symbols, direct `DT_NEEDED` entries, mDNS registration flow, connection-arbitration message flow, remote live-view state gate, and internal JPEG retrieval path belong to the private ILCE-6000 3.21 extraction.
+- **Confirmed:** the libraries, hashes, dynamic symbols, direct `DT_NEEDED` entries, mDNS registration flow, connection-arbitration message flow, remote live-view state gate, internal JPEG retrieval path, and `libNetService.so` TLS/AES/RSA boundary belong to the private ILCE-6000 3.21 extraction.
 - **Strong inference:** the layered graph is how Sony organized the network feature stack, based on library names, imports, state-machine symbols, and selected REA traces.
 - **Unknown:** process load order, public endpoint syntax, authentication/session details, service records, exact OSAL/ORB payload layouts, and cross-version ABI stability.
 - **Not performed:** no camera was connected and no network command or firmware write was issued during this pass.

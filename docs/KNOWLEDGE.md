@@ -46,6 +46,11 @@ This ledger separates information verified in this repository from external info
 | `RcWebAPIStartLiveviewComeback` requires remote-control state and a live-view state bit before calling an internal recovery routine | `analysis/evidence/rea-remote-liveview.json` | Confirmed locally from REA/Ghidra; state value `4` is not yet assigned a public semantic name |
 | `libInfraStreamingServer.so` contains live-view start/stop jobs, URL/port/filename lookup imports, JPEG content handlers, and network-service start/stop | `analysis/exports/firmware-3.21-network-stack-map.json` and private ELF symbols | Confirmed locally as symbol/import metadata |
 | `ContentHandlerEEImpl::GetLiveViewJpeg` requests frames through a synchronous OSAL message and maps the returned JPEG by ID and size | `analysis/evidence/rea-stream-liveview.json` | Confirmed locally from REA/Ghidra; frame message fields remain unknown |
+| `libNetService.so` exports TLS connection wrappers, AES-128-CBC helpers, RSA/PKCS#1 helpers, and software Rijndael encryption | `analysis/exports/firmware-3.21-network-stack-map.json` and private ELF symbols | Confirmed locally as a static crypto boundary |
+| The AES-128-CBC wrapper processes 16-byte blocks with a 16-byte key and IV and has no visible byte-rate limiter | `analysis/evidence/rea-netservice-aes128-cbc-encrypt.json`, `analysis/evidence/rea-netservice-aes-encrypt.json` | Confirmed locally from REA/Ghidra; caller padding and runtime timing remain unknown |
+| The TLS encryption wrapper allocates input length plus 300 bytes, while the decryption wrapper allocates three times input length plus 1500 bytes | `analysis/evidence/rea-netservice-tls-encrypt.json`, `analysis/evidence/rea-netservice-tls-decrypt.json` | Confirmed locally as allocation policy; these values are not transfer-rate limits |
+| The TLS cipher-list wrapper forwards a caller-supplied cipher list; the selected AES-CBC/RSA suite is not recovered | `analysis/evidence/rea-netservice-tls-set-cipher.json` | Confirmed locally; `tlsv1_client_*` core routines are undefined imports |
+| With SD-card reads excluded, static firmware evidence gives no numeric MB/s limit; throughput is bounded by WLAN/socket service, software AES/TLS processing, and the consuming producer/consumer path | `docs/08-network-stack.md` and the crypto REA dossiers | Confirmed as a static conclusion; camera-side benchmark still required |
 | The pinned Sony-PMCA-RE host implementation uses Sony MTP operations `0x9280`–`0x9285` for extension write/read, reconnect, burst-shot, and AV-index operations | `analysis/exports/host-ptp-command-map.json`; external source commit `a82f5baaa8e9c3d9f28f94699e860fb2e48cc8e0` | Confirmed locally from read-only source |
 | Sony extension requests use a 16-byte little-endian header with data size, command ID, direction, and eight reserved bytes | `analysis/exports/host-ptp-command-map.json` and pinned `pmca/usb/sony.py` | Confirmed locally from read-only source |
 | The host maps `(6, 2)` to `LensCommunicator_GetMountedLensInfo` and retries MTP operations while response `0x2019` indicates device busy | `analysis/exports/host-ptp-command-map.json` | Confirmed locally from read-only source; camera response not captured |
@@ -78,6 +83,8 @@ These are starting hypotheses. They become findings of this repository only afte
 - `libInfraNetConnectionManager.so` likely arbitrates mutually exclusive network functions and synthesizes completions when a start request arrives while a function is already active. REA shows this behavior, but the policy table and all state meanings are not recovered.
 - `libInfraNetFunctionManager.so` likely acts as the coordinator between UPnP/device description and the streaming server because it imports UPnP start/stop methods and exposes streaming-server message jobs.
 - The most promising network porting seam is the remote-control/Web API and streaming boundary. WLAN bring-up is lower-level board code and should be deferred unless the feature changes radio behavior.
+- `libNetService.so` is a likely TLS/crypto boundary for at least one network service because it owns TLS adapter wrappers and software AES/RSA helpers; the exact transfer caller remains unresolved.
+- For a large file, RSA should be a handshake/key-management cost while AES-CBC scales linearly with payload bytes. If SD reads do not matter, the limiting term should be the minimum of effective WLAN throughput, software AES/TLS throughput, and the network-service producer/consumer path.
 
 ## Unknowns
 
@@ -94,6 +101,8 @@ These are starting hypotheses. They become findings of this repository only afte
 - Which callers provide mDNS service names, UPnP descriptors, ports, URLs, and TXT records.
 - What the public network endpoint and framing protocol are for the `LiveViewLocator` and streaming content handlers.
 - What the network-service, ORB, and OSAL message payload layouts and state values mean, and which values are stable across firmware versions.
+- Which caller selects the TLS cipher list and whether the large-file path uses `TLS_RSA_WITH_AES_128_CBC_SHA` or another compatible suite.
+- What CPU frequency/utilization and sustained MB/s the camera achieves for plaintext and TLS transfers at different application chunk sizes.
 
 ## Claim record format
 

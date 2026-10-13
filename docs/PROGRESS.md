@@ -209,6 +209,10 @@ How is the camera's network feature stack divided between WLAN hardware control,
 - Confirmed `libInfraNetFunctionManager.so` as an UPnP and streaming-function coordinator from its imported `StartUpnpDevice`/`StopUpnpDevice` methods and streaming-server message jobs.
 - Mapped network remote control in `libInfraRemoteControlNet.so`, including Web API camera-state setters/getters, live-view URI/state, and a remote-state gate for live-view comeback.
 - Mapped `libInfraStreamingServer.so` as the JPEG delivery boundary. REA confirmed an OSAL frame request, readiness loop, and JPEG mapping path; the library also imports URL, port, filename, and IP lookup methods.
+- Mapped `libNetService.so` as a static TLS/crypto boundary. It contains TLS record wrappers, RSA/PKCS#1 helpers, software AES-128-CBC, and the Rijndael block routine.
+- Confirmed that the AES-CBC wrapper has no visible byte-rate limiter. The TLS wrappers reserve `input + 300` bytes for encryption and `input * 3 + 1500` bytes for decryption; these are allocation policies rather than speed caps.
+- Established the current throughput conclusion: with SD-card reads excluded, firmware alone does not yield a numeric MB/s limit. The bound is the minimum of effective WLAN/socket rate, software AES/TLS rate, and the network-service producer/consumer path.
+- Kept the “AES-CBC-RSA” label conditional: RSA/PKCS#1 and AES-CBC support are confirmed, but the caller-selected cipher suite and undefined `tlsv1_client_*` provider are unresolved.
 - Added the layered network reference note and machine-readable inventory.
 
 ### Confidence and limitations
@@ -227,6 +231,12 @@ How is the camera's network feature stack divided between WLAN hardware control,
 - [`analysis/evidence/rea-mdns-register.json`](../analysis/evidence/rea-mdns-register.json)
 - [`analysis/evidence/rea-remote-liveview.json`](../analysis/evidence/rea-remote-liveview.json)
 - [`analysis/evidence/rea-stream-liveview.json`](../analysis/evidence/rea-stream-liveview.json)
+- [`analysis/evidence/rea-netservice-tls-encrypt.json`](../analysis/evidence/rea-netservice-tls-encrypt.json)
+- [`analysis/evidence/rea-netservice-tls-decrypt.json`](../analysis/evidence/rea-netservice-tls-decrypt.json)
+- [`analysis/evidence/rea-netservice-tls-set-cipher.json`](../analysis/evidence/rea-netservice-tls-set-cipher.json)
+- [`analysis/evidence/rea-netservice-aes128-cbc-encrypt.json`](../analysis/evidence/rea-netservice-aes128-cbc-encrypt.json)
+- [`analysis/evidence/rea-netservice-aes-encrypt.json`](../analysis/evidence/rea-netservice-aes-encrypt.json)
+- [`analysis/evidence/rea-netservice-crypto-cipher-encrypt.json`](../analysis/evidence/rea-netservice-crypto-cipher-encrypt.json)
 
 ### Next action
 

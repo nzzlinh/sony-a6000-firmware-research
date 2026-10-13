@@ -40,6 +40,13 @@
       "libraries": ["lib/libInfraStreamingServer.so", "lib/libInfraNetFunctionManager.so"],
       "confidence": "confirmed as a static live-view delivery boundary",
       "limitation": "The exact endpoint, framing protocol, and client handshake are not yet recovered."
+    },
+    {
+      "id": "tls-crypto",
+      "role": "TLS record adapter, software AES-CBC bulk crypto, and RSA/PKCS#1 helpers",
+      "libraries": ["lib/libNetService.so"],
+      "confidence": "confirmed as a static crypto boundary",
+      "limitation": "The selected cipher suite, TLS core provider, transfer callers, and measured throughput are not yet resolved."
     }
   ],
   "libraries": [
@@ -181,6 +188,37 @@
         {"name": "getUuidWpsP2pInfo(NET_DEVICE_INFO_UUID_INFO*)", "elf_value": "0x18ed"}
       ],
       "evidence": "Dynamic symbols and strings for WPS BSS and WPS P2P UUID information."
+    },
+    {
+      "path": "lib/libNetService.so",
+      "size_bytes": 904980,
+      "sha256": "4a6deb5a665717489c2d2ae3db42ed0fb165ea565f7f56a9acac1ded0df05fde",
+      "role": "Custom network service, TLS adapter, and software crypto helpers",
+      "dt_needed": ["libNetCommon.so", "libpthread.so.0", "libstdc++.so.6", "libm.so.6", "libdl.so.2", "libgcc_s.so.1", "libc.so.6", "librt.so.1"],
+      "symbols": [
+        {"name": "tls_connection_init", "elf_value": "0xa9095"},
+        {"name": "tls_connection_set_params", "elf_value": "0xa9105"},
+        {"name": "tls_connection_handshake", "elf_value": "0xa9217"},
+        {"name": "tls_connection_encrypt", "elf_value": "0xa9297", "rea_address": "0xb9296"},
+        {"name": "tls_connection_decrypt", "elf_value": "0xa92ef", "rea_address": "0xb92ee"},
+        {"name": "tls_connection_set_cipher_list", "elf_value": "0xa9363", "rea_address": "0xb9362"},
+        {"name": "aes_128_cbc_encrypt", "elf_value": "0xa40a5", "rea_address": "0xb40a4"},
+        {"name": "aes_128_cbc_decrypt", "elf_value": "0xa4119"},
+        {"name": "aes_encrypt", "elf_value": "0xa4bf1", "rea_address": "0xb4bf0"},
+        {"name": "crypto_cipher_encrypt", "elf_value": "0xa4f6f", "rea_address": "0xb4f6e"},
+        {"name": "crypto_public_key_encrypt_pkcs1_v15", "elf_value": "0xa534d"},
+        {"name": "crypto_private_key_decrypt_pkcs1_v15", "elf_value": "0xa536f"},
+        {"name": "rijndaelEncrypt", "elf_value": "0xa4731"}
+      ],
+      "evidence": [
+        "analysis/evidence/rea-netservice-tls-encrypt.json",
+        "analysis/evidence/rea-netservice-tls-decrypt.json",
+        "analysis/evidence/rea-netservice-tls-set-cipher.json",
+        "analysis/evidence/rea-netservice-aes128-cbc-encrypt.json",
+        "analysis/evidence/rea-netservice-aes-encrypt.json",
+        "analysis/evidence/rea-netservice-crypto-cipher-encrypt.json"
+      ],
+      "limitation": "The tlsv1_client_* core routines are undefined imports; the runtime provider and large-file callers are not resolved."
     }
   ],
   "direct_dependency_observations": [
@@ -189,7 +227,8 @@
     {"from": "lib/libInfraNetFunctionManager.so", "to": ["libNetCommon.so", "libMWF.so"]},
     {"from": "lib/libInfraRemoteControlNet.so", "to": ["libNetCommon.so"]},
     {"from": "lib/libInfraStreamingServer.so", "to": ["libmintx.so", "libNetCommon.so", "libbackup.so"]},
-    {"from": "lib/libWlanResource.so", "to": ["iw.so", "libbackup.so"]}
+    {"from": "lib/libWlanResource.so", "to": ["iw.so", "libbackup.so"]},
+    {"from": "lib/libNetService.so", "to": ["libNetCommon.so", "TLS/crypto path"]}
   ],
   "research_graph": {
     "description": "Likely integration order derived from names, symbols, and selected callers; arrows are not all direct DT_NEEDED edges.",
@@ -208,6 +247,8 @@
     "Recover callers and relocation edges for each network library.",
     "Identify service names, ports, TXT records, and URL paths passed into mDNS, UPnP, and LiveViewLocator.",
     "Capture a passive network session and compare it with the static command/state boundaries.",
+    "Trace the callers that select the TLS cipher list and feed large buffers into tls_connection_encrypt/decrypt.",
+    "Benchmark plaintext versus TLS transfers with SD-card reads excluded, recording CPU load and application chunk size.",
     "Compare these libraries and symbols against another A6000 firmware version before proposing a porting shim."
   ]
 }
