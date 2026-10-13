@@ -14,7 +14,7 @@ This is the first REA/Ghidra native-analysis record. It uses the extracted ARM h
 | Native provider | Ghidra 12.1.4, headless, with JDK 21 |
 | Compiler marker | `GCC: (20120717 (Sony CE Linux 8.2.1.1)) 4.5.1` |
 
-The original ELF remains in the private extracted firmware tree. Public evidence contains hashes, decompiler output, assembly observations, and references; it does not contain firmware bytes.
+The original ELF and full REA output remain in the private extracted firmware tree. Public evidence contains hash-bound metadata and human-written observations; it does not contain firmware bytes or raw decompiler output.
 
 ## Reproduction
 

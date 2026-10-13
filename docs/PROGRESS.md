@@ -97,7 +97,7 @@ Can we establish a repeatable native-analysis workflow for the ARM updater and a
 ### Limitations
 
 - The analysis is static and offline; no updater was run against a camera.
-- Ghidra pseudocode is a reconstruction, not Sony source code.
+- Private Ghidra pseudocode is a reconstruction, not Sony source code; the public evidence records now retain metadata only.
 - The checksum record's full field semantics still need correlation across more `.sum` files.
 
 ## M4 — Platform map
@@ -241,6 +241,36 @@ How is the camera's network feature stack divided between WLAN hardware control,
 ### Next action
 
 Recover callers and relocation edges for service metadata and endpoint construction, then compare the static map with a passive network capture if a camera is available.
+
+### Publication and licensing boundary
+
+Status: **complete for the current public tree**
+
+### Question
+
+Which project material can be openly licensed, and which firmware-derived material must remain outside that license?
+
+### Achievements
+
+- Added component-specific licensing: MIT for original scripts and CC BY 4.0 for original documentation.
+- Added a root license policy, third-party notices, a publication policy, and an independent-project/trademark statement.
+- Replaced the public REA JSON dossiers with 47 metadata-only, hash-bound records. They retain evidence IDs, input hashes, analysis provenance, procedure identity, and limitations while omitting pseudocode, assembly, strings, references, and native value-flow data.
+- Archived the full REA dossiers in `/home/zeelinh/sony-a6000-private/` outside the repository.
+- Rewrote the local and public Git history so the previous raw evidence files are no longer reachable from `main`; the public remote now points to the cleaned history.
+
+### Exit evidence
+
+- [`LICENSE`](../LICENSE)
+- [`LICENSE-CODE`](../LICENSE-CODE)
+- [`LICENSE-DOCS`](../LICENSE-DOCS)
+- [`THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)
+- [`docs/09-licensing-and-publication.md`](09-licensing-and-publication.md)
+- [`analysis/evidence/README.md`](../analysis/evidence/README.md)
+
+### Limitations
+
+- This is a publication-risk boundary, not a jurisdiction-specific legal opinion.
+- Sony's exact ILCE-6000 EULA and the law applicable to each contributor still need to be checked before distributing firmware-derived material beyond the current metadata-only form.
 
 ## M6 — Runtime and protocol observation
 

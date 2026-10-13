@@ -14,7 +14,7 @@ The public REA dossiers are:
 - [`rea-webapi-start-liveview-command.json`](../analysis/evidence/rea-webapi-start-liveview-command.json)
 - [`rea-lens-init-command.json`](../analysis/evidence/rea-lens-init-command.json)
 
-The dossiers contain Ghidra pseudocode and evidence metadata. The pseudocode is a reconstruction and should be checked against instructions and neighboring functions before it is treated as an implementation specification.
+The private REA dossiers contain Ghidra pseudocode and evidence metadata. Public records retain only the evidence metadata; authorized researchers should check the private pseudocode against instructions and neighboring functions before treating it as an implementation specification.
 
 ## USB, PTP, MTP, and mass storage
 
