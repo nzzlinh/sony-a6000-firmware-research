@@ -4,7 +4,64 @@
   "partition": "nflasha15",
   "partition_role": "System Main / user-space camera services and image framework",
   "source_policy": "Derived file metadata, ELF symbol metadata, direct dependency metadata, and bounded role annotations only; proprietary ELF files and binary payloads remain private.",
-  "status": "initial static inventory",
+  "status": "control and image-metadata boundaries partially traced",
+  "rea_observations": [
+    {
+      "procedure": "SCALARDAEMON::SystemEventIssuerCameraParameter::setRgbMatrix",
+      "binary": "lib/libScalarDaemon.so",
+      "private_evidence": "analysis/evidence/rea-image-scalar-rgbmatrix.json",
+      "observation": "The implementation accepts ten numeric values, packages them as typed system parameters, and emits one camera event. REA recovered callers in the camera-parameter command processor and initialization patch path.",
+      "confidence": "observed static behavior",
+      "porting_meaning": "This is a control-plane seam; it does not identify the downstream pixel engine."
+    },
+    {
+      "procedure": "SCALARDAEMON::SystemEventIssuerImageFilter::filterArtEffect",
+      "binary": "lib/libScalarDaemon.so",
+      "private_evidence": "analysis/evidence/rea-image-scalar-filter-art.json",
+      "observation": "The implementation accepts five numeric values and one boolean, packages typed parameters, and emits one image-filter event. The observed body contains no pixel-buffer or JPEG operation.",
+      "confidence": "observed static behavior",
+      "porting_meaning": "Picture-effect settings are dispatched through the same event-oriented control plane."
+    },
+    {
+      "procedure": "SCALARDAEMON::SystemEventIssuerCamera::setExtendedGammaTable",
+      "binary": "lib/libScalarDaemon.so",
+      "private_evidence": "analysis/evidence/rea-image-scalar-gamma.json",
+      "observation": "The implementation accepts two numeric values and two booleans, converts the booleans to numeric mode flags, packages four typed parameters, and emits one camera event. No gamma lookup loop or table write is visible in the function.",
+      "confidence": "observed static behavior",
+      "porting_meaning": "Gamma selection/table control is also dispatched through the event plane; the consumer and table storage remain downstream."
+    },
+    {
+      "procedure": "SCALARDAEMON::CameraSettingInheritance::setWhiteBalanceParameters",
+      "binary": "lib/libScalarDaemon.so",
+      "private_evidence": "analysis/evidence/rea-image-scalar-wb-inherit.json",
+      "observation": "The implementation maps a white-balance mode through a bounded parameter table, retrieves parameter-storage entries, and for a small mode group applies a model-derived offset before storing values. It does not emit the camera event itself.",
+      "confidence": "observed static behavior",
+      "porting_meaning": "White-balance model normalization is a separate state layer before camera-event dispatch."
+    },
+    {
+      "procedure": "STM::rawparseImageInstance",
+      "binary": "lib/libStm.so",
+      "private_evidence": "analysis/evidence/rea-image-stm-rawparse.json",
+      "observation": "The implementation sends an asynchronous dataflow request using an image-instance identifier, receives a bounded response, and copies fixed-width raw-parse metadata fields into the caller's result structure.",
+      "confidence": "observed static behavior",
+      "porting_meaning": "STM is a handle-to-metadata bridge around a downstream dataflow service; it is not evidence of the raw conversion kernel."
+    },
+    {
+      "procedure": "MprIf::EncodeStill",
+      "binary": "lib/libmpr.so",
+      "observation": "ELF metadata exposes thin still-encode entry points, feature-interface encode/write operations, playback with RAW development metadata, and record-definition setters. A full REA/Ghidra pass exceeded the 330-second provider timeout on this 10.3 MiB C++ library.",
+      "confidence": "confirmed static boundary; implementation unresolved",
+      "porting_meaning": "Treat MPR as the media integration seam until a smaller targeted analysis or another provider recovers the codec caller chain."
+    },
+    {
+      "procedure": "OBJAVBBCBASECLASS::SdfCh::decodeJpeg",
+      "binary": "lib/libBizFw.so",
+      "private_evidence": "analysis/evidence/rea-image-bizfw-decodejpeg.json",
+      "observation": "The decode entry validates command structures, fills a fixed service command, and forwards it through an AVBBC send-and-receive acknowledgement helper. It is a service-channel wrapper, not a visible JPEG pixel loop.",
+      "confidence": "observed static behavior",
+      "porting_meaning": "JPEG decode is likely performed by a downstream service or payload selected through the AVBBC channel."
+    }
+  ],
   "layers": [
     {
       "id": "color-control",
@@ -189,10 +246,8 @@
   ],
   "next_targets": [
     "SCALARDAEMON::SystemEventIssuerCameraParameter::setColorMode",
-    "SCALARDAEMON::SystemEventIssuerCamera::setRgbMatrix",
     "SCALARDAEMON::SystemEventIssuerCamera::setExtendedGammaTable",
-    "SCALARDAEMON::SystemEventIssuerImageFilter::filterArtEffect",
-    "STM::StmMain::rawparseImageInstance",
+    "STM::StmMain::deposit/share/overwrite image-instance lifetime methods",
     "MprIf::EncodeStill"
   ]
 }

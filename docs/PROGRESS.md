@@ -326,22 +326,35 @@ Which firmware boundaries carry camera color settings, YC/image metadata, still 
 - Identified `libStm.so` as the image-instance and raw-parse boundary, and `libmpr.so` as the media boundary for still encode, write/read/playback, RAW development, record definition, and XvYCC metadata.
 - Identified `libBizFw.so`, `libBizFw2.so`, and `libObj.so` as lower-level AVBBC/dataflow/view bridges around image, display, effect, SDI, and media operations.
 - Catalogued the `sabin/` payload names for JPEG, AVC, noise reduction, sharpening, detection, panorama, and still/movie coefficient/table candidates. The loader and payload interface remain unresolved.
+- Used REA/Ghidra to trace `setRgbMatrix`: ten numeric inputs become typed system parameters and one camera event, with callers in both the camera-parameter command processor and initialization patch path.
+- Used REA/Ghidra to trace `filterArtEffect`: five numeric inputs and one boolean become typed image-filter parameters and one event; the observed body contains no pixel-buffer or JPEG operation.
+- Used REA/Ghidra to trace `setExtendedGammaTable`: two numeric inputs and two booleans become four typed event parameters; the observed body contains no gamma lookup loop or table write.
+- Used REA/Ghidra to trace `CameraSettingInheritance::setWhiteBalanceParameters`: white-balance mode selection is normalized through parameter storage and, for a small mode group, a model-derived offset before later camera-event dispatch.
+- Used REA/Ghidra to trace `STM::rawparseImageInstance`: an image-instance identifier becomes an asynchronous dataflow request, and a bounded response is copied into a fixed-width raw-parse result structure.
+- Used REA/Ghidra to trace `OBJAVBBCBASECLASS::SdfCh::decodeJpeg`: the user-space entry validates a decode command, fills a service record, and forwards it through an AVBBC send/receive acknowledgement helper; it does not contain the JPEG pixel loop.
+- Expanded the MPR surface map: `libmpr.so` exposes thin still-encode entry points, `FeaIf` encode/write operations, playback with RAW development metadata, and record-definition setters; the first full REA pass timed out during default analysis of the 10.3 MiB C++ library, so its caller chain remains open.
 - Recorded a metadata-only image-processing map and a public boundary note without copying proprietary firmware code, strings, or binary payloads.
 
 ### Confidence and limitations
 
-- **Confirmed:** the named files, hashes, direct dependencies, exported symbols, and image/media payload filenames belong to the private ILCE-6000 3.21 extraction.
-- **Strong inference:** `libScalarDaemon.so` is the camera color/image parameter control plane; `libmpr.so` is the still/media operation boundary; `dataflowInfraFramework.so` is the shared YC/image metadata contract.
-- **Unknown:** sensor/ISP ownership, Bayer/demosaic details, exact color matrices and gamma tables, payload loading, message structures, runtime process ownership, and cross-version stability.
+- **Confirmed:** the named files, hashes, direct dependencies, exported symbols, image/media payload filenames, and the six traced REA function boundaries belong to the private ILCE-6000 3.21 extraction.
+- **Strong inference:** `libScalarDaemon.so` is the camera color/image parameter control plane; `libStm.so` is a handle-to-metadata bridge; `libmpr.so` is the still/media operation boundary; `dataflowInfraFramework.so` is the shared YC/image metadata contract.
+- **Unknown:** sensor/ISP ownership, Bayer/demosaic details, exact color matrices and gamma tables, the MPR codec caller chain, payload loading, message structures, runtime process ownership, and cross-version stability.
 
 ### Exit evidence
 
 - [`docs/10-image-processing.md`](10-image-processing.md)
 - [`analysis/exports/firmware-3.21-image-processing-map.json`](../analysis/exports/firmware-3.21-image-processing-map.json)
+- [`analysis/evidence/rea-image-scalar-rgbmatrix.json`](../analysis/evidence/rea-image-scalar-rgbmatrix.json)
+- [`analysis/evidence/rea-image-scalar-filter-art.json`](../analysis/evidence/rea-image-scalar-filter-art.json)
+- [`analysis/evidence/rea-image-scalar-gamma.json`](../analysis/evidence/rea-image-scalar-gamma.json)
+- [`analysis/evidence/rea-image-scalar-wb-inherit.json`](../analysis/evidence/rea-image-scalar-wb-inherit.json)
+- [`analysis/evidence/rea-image-stm-rawparse.json`](../analysis/evidence/rea-image-stm-rawparse.json)
+- [`analysis/evidence/rea-image-bizfw-decodejpeg.json`](../analysis/evidence/rea-image-bizfw-decodejpeg.json)
 
 ### Next action
 
-Use REA to trace `libScalarDaemon.so` color-setting command processors, `libStm.so` raw parsing, and the `libmpr.so` `MprIf::EncodeStill` caller chain. Then recover the `sabin/` loader and correlate one still or live-view output path with a controlled observation.
+Complete the `libmpr.so` `MprIf::EncodeStill` caller chain, recover the `sabin/` loader, and correlate one still or live-view output path with a controlled observation. Then compare the event/dataflow signatures across a second firmware version.
 
 ## M7 — Cross-version comparison and porting boundaries
 

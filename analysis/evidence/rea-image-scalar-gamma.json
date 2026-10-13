@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev_edfb5a1c3b22ac6e9a2b6372b58b16e4f727d201a642d244e18b07b5a027a4d6",
+  "subject": {
+    "name": "libScalarDaemon.so",
+    "sha256": "ca28cbf4c5c6402160ad80f6ad9f5e99052f42c3fabc382c557fcded18addc29",
+    "format": "elf",
+    "architecture": "arm",
+    "public_label": "extended gamma-table event producer"
+  },
+  "analysis": {
+    "provider": {
+      "id": "ghidra",
+      "name": "Ghidra",
+      "version": "12.1.4"
+    },
+    "profile_digest": "e87c132666812361c9c173067536033b1a9e95723147e4ced29d458510cce9ac",
+    "operation": "analyze_function",
+    "confidence": "observed",
+    "authority": "shipped-artifact"
+  },
+  "procedure": {
+    "address": "0xf1f10",
+    "name": "SCALARDAEMON::SystemEventIssuerCamera::setExtendedGammaTable"
+  },
+  "redaction": {
+    "status": "metadata-only",
+    "excluded_fields": [
+      "pseudocode",
+      "assembly",
+      "comments",
+      "callees",
+      "callers",
+      "incoming_references",
+      "outgoing_references",
+      "referenced_strings",
+      "referenced_names",
+      "basic_blocks",
+      "native_api",
+      "native_value_flow"
+    ],
+    "reason": "These fields may reproduce or closely derive from proprietary firmware code or data."
+  },
+  "public_note": "The full REA result is retained in private research storage. Human-reviewed findings are documented in the milestone notes.",
+  "limitations": [
+    "Unresolved computed or indirect flows without target addresses are not represented as reference edges.",
+    "Thunk and external classifications are Ghidra FunctionManager observations; they do not resolve targetless calls.",
+    "Pseudocode and assembly are Ghidra-specific representations, not original source or Hopper-equivalent text.",
+    "The analyzed function was imported from the private firmware extraction; the original executable bytes are not redistributed."
+  ]
+}
