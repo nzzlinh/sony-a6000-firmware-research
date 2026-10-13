@@ -1,0 +1,213 @@
+{
+  "schema_version": 1,
+  "firmware": "ILCE-6000 3.21",
+  "partition": "nflasha15",
+  "partition_role": "System Main / user-space camera services",
+  "source_policy": "Dynamic symbol metadata and selected REA evidence only; proprietary shared objects remain private.",
+  "address_note": "The ELF values are raw symbol values. For this firmware sample, REA/Ghidra loaded Thumb function entries at ELF value + 0x10000 - 1.",
+  "layers": [
+    {
+      "id": "wlan-hardware-control",
+      "role": "Board GPIO, MMIO, host-driver, and target-firmware lifecycle",
+      "libraries": ["lib/libWlanControlCommon.so", "lib/libWlanResource.so"],
+      "confidence": "confirmed as a static boundary",
+      "limitation": "The call site that selects the product-specific WLAN mode is not yet mapped."
+    },
+    {
+      "id": "connection-arbitration",
+      "role": "AP, WPS, group-owner, auto-connect, and network-service state transitions",
+      "libraries": ["lib/libInfraNetConnectionManager.so"],
+      "confidence": "confirmed as a static boundary",
+      "limitation": "The lower WLAN/network backend and process owner are not yet tied to this library."
+    },
+    {
+      "id": "service-discovery",
+      "role": "mDNS service registration and UPnP device-service coordination",
+      "libraries": ["lib/libInfraMDnsControl.so", "lib/libInfraNetFunctionManager.so"],
+      "confidence": "confirmed as static mDNS/UPnP boundaries",
+      "limitation": "Advertised service names, ports, TXT records, and startup order still need runtime or caller evidence."
+    },
+    {
+      "id": "remote-control",
+      "role": "Network remote-control state, Web API camera parameters, and live-view state",
+      "libraries": ["lib/libInfraRemoteControlNet.so", "lib/libInfraWebApi.so"],
+      "confidence": "confirmed as static command/state boundaries",
+      "limitation": "The wire-level HTTP/UPnP request mapping and internal message IDs remain incomplete."
+    },
+    {
+      "id": "live-view-delivery",
+      "role": "JPEG frame retrieval, content handlers, URL/port lookup, and streaming-service FSM",
+      "libraries": ["lib/libInfraStreamingServer.so", "lib/libInfraNetFunctionManager.so"],
+      "confidence": "confirmed as a static live-view delivery boundary",
+      "limitation": "The exact endpoint, framing protocol, and client handshake are not yet recovered."
+    }
+  ],
+  "libraries": [
+    {
+      "path": "lib/libWlanControlCommon.so",
+      "size_bytes": 23840,
+      "sha256": "599939f677713abb9676d21ec5a0f60edce423e7f490129420b0c340d4fb326c",
+      "role": "WLAN port and driver control",
+      "dt_needed": ["libbackup.so", "libpthread.so.0", "libstdc++.so.6", "libm.so.6", "libdl.so.2", "libgcc_s.so.1", "libc.so.6", "librt.so.1"],
+      "symbols": [
+        {"name": "WlanControlCommon::initializePort", "elf_value": "0x2ab5", "rea_address": "0x12ab4"},
+        {"name": "WlanControlCommon::finalizePort", "elf_value": "0x3095"},
+        {"name": "WlanControlCommon::setPortToStartWlan", "elf_value": "0x3485"},
+        {"name": "WlanControlCommon::setPortToStopWlan", "elf_value": "0x37e1"},
+        {"name": "WlanControlCommon::installWlanDrivers(WlanControlCommon::MODE)", "elf_value": "0x3b3d"},
+        {"name": "WlanControlCommon::uninstallWlanDrivers", "elf_value": "0x3cd5"},
+        {"name": "WlanControlCommon::loadWlanFirmware(WlanControlCommon::MODE)", "elf_value": "0x3e2d"},
+        {"name": "WlanControlCommon::checkPortToStartWlan", "elf_value": "0x4111"}
+      ],
+      "evidence": ["analysis/evidence/rea-wlan-initialize-port.json"]
+    },
+    {
+      "path": "lib/libWlanResource.so",
+      "size_bytes": 63656,
+      "sha256": "e4b1ff8fc3460665e340e850218977c7b0296b1f8cb6b407b3551bd92e9665ed",
+      "role": "WLAN resource manager and product-mode orchestration",
+      "dt_needed": ["libbackup.so", "iw.so", "libpthread.so.0", "libstdc++.so.6", "libm.so.6", "libdl.so.2", "libgcc_s.so.1", "libc.so.6", "librt.so.1"],
+      "symbols": [
+        {"name": "wlanResource_init", "elf_value": "0x39f9"},
+        {"name": "startWlan(bool)", "elf_value": "0x9209"},
+        {"name": "stopWlan(bool)", "elf_value": "0x87fd"},
+        {"name": "initializeWlan", "elf_value": "0x5541"},
+        {"name": "loadWlanHostDrivers(bool)", "elf_value": "0x64c5"},
+        {"name": "unloadWlanHostDrivers", "elf_value": "0x6729"},
+        {"name": "initializeWlanTargetBoard(bool)", "elf_value": "0x68b1"},
+        {"name": "WlanResourceMainThread(void*)", "elf_value": "0x9fe9"}
+      ],
+      "evidence": "Dynamic symbols and strings, including wlanMemoryAllocator.ko and start/stop WLAN request IDs."
+    },
+    {
+      "path": "lib/libInfraNetConnectionManager.so",
+      "size_bytes": 45492,
+      "sha256": "177e123aecabf3846d85cfb4da83ad7ab2da1c3958597cc2af7cf7cae521d9a9",
+      "role": "Network connection manager and service arbitrator",
+      "dt_needed": ["libMWF.so", "libNetCommon.so", "libpthread.so.0", "libstdc++.so.6", "libm.so.6", "libdl.so.2", "libgcc_s.so.1", "libc.so.6", "librt.so.1"],
+      "symbols": [
+        {"name": "NetConnectionManager_init", "elf_value": "0x2a61"},
+        {"name": "NetConnectionManager_exit", "elf_value": "0x2949"},
+        {"name": "NetServiceArbitrator::procAsyncReqStartFunc(NetServiceArbitrator::message*)", "elf_value": "0x46ad", "rea_address": "0x146ac"},
+        {"name": "NetServiceArbitrator::procAsyncReqStopFunc(NetServiceArbitrator::message*)", "elf_value": "0x4a19"},
+        {"name": "NetServiceArbitrator::procAsyncReqStartGroupOwner(NetServiceArbitrator::message*)", "elf_value": "0x4e45"},
+        {"name": "NetServiceArbitrator::procAsyncReqStopGroupOwner(NetServiceArbitrator::message*)", "elf_value": "0x52b9"},
+        {"name": "NetServiceArbitrator::procAsyncReqWpsCommands(NetServiceArbitrator::message*)", "elf_value": "0x5865"},
+        {"name": "NetServiceArbitrator::procAsyncReqAPCommands(NetServiceArbitrator::message*)", "elf_value": "0x5bb9"}
+      ],
+      "evidence": ["analysis/evidence/rea-net-start.json", "Strings for AP, WPS, group-owner, UPnP, and auto-connect command/event IDs."]
+    },
+    {
+      "path": "lib/libInfraMDnsControl.so",
+      "size_bytes": 142532,
+      "sha256": "cf0e575e55f1a0935de58d03bd0e3b96fa6e71307c3bc843ae12790bf44eddd7",
+      "role": "mDNS/Bonjour service registration",
+      "dt_needed": ["libMWF.so", "libNetContUtil.so", "libpthread.so.0", "libstdc++.so.6", "libm.so.6", "libdl.so.2", "libgcc_s.so.1", "libc.so.6", "librt.so.1"],
+      "symbols": [
+        {"name": "MDnsControl_init", "elf_value": "0x67fd"},
+        {"name": "MDnsControlUser::MDnsControl::Init", "elf_value": "0x6601"},
+        {"name": "MDnsControlUser::MDnsControl::RegisterOneService(char const*, char const*, char const*, unsigned char const*, unsigned short, long)", "elf_value": "0x7721", "rea_address": "0x17720"},
+        {"name": "MDnsControlUser::MDnsControl::RegisterOurServices", "elf_value": "0x78cd"},
+        {"name": "mDNS_RegisterService", "elf_value": "0x1a341"},
+        {"name": "mDNS_DeregisterService", "elf_value": "0x1a15d"}
+      ],
+      "evidence": ["analysis/evidence/rea-mdns-register.json"]
+    },
+    {
+      "path": "lib/libInfraNetFunctionManager.so",
+      "size_bytes": 53176,
+      "sha256": "2540e2e3a17796e5fa003cc3de7b6b4b62554fe1e155a30a91e74e1f024b439e",
+      "role": "Network-function FSM, UPnP control, and streaming-server message bridge",
+      "dt_needed": ["libNetCommon.so", "libMWF.so", "libpthread.so.0", "libstdc++.so.6", "libm.so.6", "libdl.so.2", "libgcc_s.so.1", "libc.so.6", "librt.so.1"],
+      "symbols": [
+        {"name": "NetFunctionManager_init", "elf_value": "0x4df1"},
+        {"name": "NetFunctionManager_exit", "elf_value": "0x4961"},
+        {"name": "NetFunctionManagerUser::NetFunctionManager::nfm_job_sync_SsInitCmd_NoLock", "elf_value": "0x6cf5"},
+        {"name": "NetFunctionManagerUser::NetFunctionManager::nfm_job_sync_SsFinalizeCmd_NoLock", "elf_value": "0x6ded"},
+        {"name": "NetFunctionManagerUser::NetFunctionManager::nfm_job_sync_PassInfraStreamingServerMsg", "elf_value": "0x5eb1"},
+        {"name": "NetFunctionManagerUser::NetFunctionManager::nfm_sub_job_StartUpnpServer", "elf_value": "0x7979"},
+        {"name": "NetFunctionManagerUser::NetFunctionManager::nfm_sub_job_StopUpnpServer", "elf_value": "0x7cfd"},
+        {"name": "NetFunctionManagerUser::NetFunctionManager::sendSsMsg", "elf_value": "0x4ad5"}
+      ],
+      "evidence": "Dynamic symbols and strings for InfraStreamingServer callbacks, UPnP start/stop, and live-view message IDs."
+    },
+    {
+      "path": "lib/libInfraRemoteControlNet.so",
+      "size_bytes": 106040,
+      "sha256": "4b906c34ccc42679bc5063057a296457db1db8eea3f4ad4bf9e42c379f363ab2",
+      "role": "Network remote-control API and camera-state bridge",
+      "dt_needed": ["libNetCommon.so", "libpthread.so.0", "libstdc++.so.6", "libm.so.6", "libdl.so.2", "libgcc_s.so.1", "libc.so.6", "librt.so.1"],
+      "symbols": [
+        {"name": "InfraRemoteControlNet_Init", "elf_value": "0x3729"},
+        {"name": "RcWebAPIFunc(DefWebApi::WebApiMsg*)", "elf_value": "0xfc2d"},
+        {"name": "RcCameraStateSetParameterFromWebApi(DefWebApi::WebApiMsg*)", "elf_value": "0x87b5"},
+        {"name": "RcCameraStateSetParameter(DefInfraRemoteControlNet::ST_MSG_REQ*)", "elf_value": "0x8ed9"},
+        {"name": "RcWebAPIStartLiveviewComeback", "elf_value": "0xf50d", "rea_address": "0x1f50c"},
+        {"name": "RcWebAPISendStartLiveviewStillCmd", "elf_value": "0xf659"},
+        {"name": "RcWebAPIStopLiveview", "elf_value": "0xf5e9"},
+        {"name": "RcCameraStateGetLiveviewStillUri(char*)", "elf_value": "0x7311"},
+        {"name": "RcCameraStateSetLiveviewStillUri(char*)", "elf_value": "0x7295"}
+      ],
+      "evidence": ["analysis/evidence/rea-remote-liveview.json", "Dynamic symbols include camera-state getters/setters for exposure, focus, white balance, storage, and live view."]
+    },
+    {
+      "path": "lib/libInfraStreamingServer.so",
+      "size_bytes": 124476,
+      "sha256": "07158a3dc4d51adb4b7ff88efef6f095d51b989395f8674b9e2f2efe38b62d1f",
+      "role": "Network live-view and image-content streaming server",
+      "dt_needed": ["libmintx.so", "libNetCommon.so", "libbackup.so", "libpthread.so.0", "libstdc++.so.6", "libm.so.6", "libdl.so.2", "libgcc_s.so.1", "libc.so.6", "librt.so.1"],
+      "symbols": [
+        {"name": "InfraStreamingServer_init", "elf_value": "0xada5"},
+        {"name": "InfraStreamingServerUser::InfraStreamingServer::Init", "elf_value": "0xab0d"},
+        {"name": "InfraStreamingServerUser::InfraStreamingServer::streamingserver_main(void*)", "elf_value": "0xe125"},
+        {"name": "InfraStreamingServerUser::InfraStreamingServer::jobLiveViewStartCmd(void*, unsigned int, void*)", "elf_value": "0xd2bd"},
+        {"name": "InfraStreamingServerUser::InfraStreamingServer::jobLiveViewStopCmd(void*, unsigned int, void*)", "elf_value": "0xd215"},
+        {"name": "InfraStreamingServerUser::ContentHandlerEEImpl::GetLiveViewJpeg(char**)", "elf_value": "0x1467d", "rea_address": "0x2467c"},
+        {"name": "InfraStreamingServerUser::ContentHandlerEEImpl::MmapLiveViewJpeg(char**, unsigned short, unsigned int)", "elf_value": "0x14569"},
+        {"name": "InfraStreamingServerUser::ContentHandlerEEImpl::SetLiveViewPayloadHeader(DefLiveViewContainer::PayloadHeader_ScalarA_def*, unsigned int)", "elf_value": "0x1486d"},
+        {"name": "StartNetService", "elf_value": "0x1128d"},
+        {"name": "StopNetService(bool)", "elf_value": "0x11329"}
+      ],
+      "evidence": ["analysis/evidence/rea-stream-liveview.json", "Dynamic symbols import LiveViewLocator URL, port, filename, and IP lookup methods from libNetCommon.so."]
+    },
+    {
+      "path": "lib/libInfraNetDeviceInfo.so",
+      "size_bytes": 12128,
+      "sha256": "b68608b7acbcde3fe64f9abbdd8d16ea5f5cc95adcfc8f2aeb2abb4ffd453db2",
+      "role": "Network identity and WPS/P2P device-information helper",
+      "dt_needed": ["libbackup.so", "libpthread.so.0", "libstdc++.so.6", "libm.so.6", "libdl.so.2", "libgcc_s.so.1", "libc.so.6", "librt.so.1"],
+      "symbols": [
+        {"name": "getUuidWpsBssInfo(NET_DEVICE_INFO_UUID_INFO*)", "elf_value": "0x1821"},
+        {"name": "getUuidWpsP2pInfo(NET_DEVICE_INFO_UUID_INFO*)", "elf_value": "0x18ed"}
+      ],
+      "evidence": "Dynamic symbols and strings for WPS BSS and WPS P2P UUID information."
+    }
+  ],
+  "direct_dependency_observations": [
+    {"from": "lib/libInfraNetConnectionManager.so", "to": ["libMWF.so", "libNetCommon.so"]},
+    {"from": "lib/libInfraMDnsControl.so", "to": ["libMWF.so", "libNetContUtil.so"]},
+    {"from": "lib/libInfraNetFunctionManager.so", "to": ["libNetCommon.so", "libMWF.so"]},
+    {"from": "lib/libInfraRemoteControlNet.so", "to": ["libNetCommon.so"]},
+    {"from": "lib/libInfraStreamingServer.so", "to": ["libmintx.so", "libNetCommon.so", "libbackup.so"]},
+    {"from": "lib/libWlanResource.so", "to": ["iw.so", "libbackup.so"]}
+  ],
+  "research_graph": {
+    "description": "Likely integration order derived from names, symbols, and selected callers; arrows are not all direct DT_NEEDED edges.",
+    "edges": [
+      ["libWlanControlCommon.so", "libWlanResource.so"],
+      ["libWlanResource.so", "libInfraNetConnectionManager.so"],
+      ["libInfraNetConnectionManager.so", "libInfraMDnsControl.so"],
+      ["libInfraNetFunctionManager.so", "libInfraStreamingServer.so"],
+      ["libInfraNetFunctionManager.so", "UPnP service start/stop"],
+      ["libInfraRemoteControlNet.so", "Web API camera state"],
+      ["libInfraStreamingServer.so", "LiveViewLocator / JPEG content"],
+      ["libInfraWebApi.so", "ORB camera-control messages"]
+    ]
+  },
+  "next_probes": [
+    "Recover callers and relocation edges for each network library.",
+    "Identify service names, ports, TXT records, and URL paths passed into mDNS, UPnP, and LiveViewLocator.",
+    "Capture a passive network session and compare it with the static command/state boundaries.",
+    "Compare these libraries and symbols against another A6000 firmware version before proposing a porting shim."
+  ]
+}

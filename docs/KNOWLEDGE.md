@@ -35,6 +35,17 @@ This ledger separates information verified in this repository from external info
 | `libIMDB.so` exports target-selection functions; `IMDB_find_entry` scans records by target ID and mask, and `IMDB_find_target_bit` maps target names to bit positions | `analysis/evidence/rea-imdb-find-entry.json` and `analysis/evidence/rea-imdb-find-target-bit.json` | Confirmed locally; registry callers remain unknown |
 | `bin/orb-server` contains `/usr/lib/libInfraWebApi.so` but does not list it in `DT_NEEDED` | `analysis/exports/firmware-3.21-feature-host-candidates.json` | Confirmed locally; host ownership is a working hypothesis |
 | `libOnDemandLoader.so` contains singleton initialization and load-program manager methods | `analysis/exports/firmware-3.21-feature-host-candidates.json` and `analysis/evidence/rea-ondemand-loader-init.json` | Confirmed locally; relationship to feature-library loading is unknown |
+| `libWlanControlCommon.so` owns WLAN port initialization, driver installation/removal, firmware loading, and start/stop checks | `analysis/exports/firmware-3.21-network-stack-map.json` and `analysis/evidence/rea-wlan-initialize-port.json` | Confirmed locally as a static boundary |
+| `WlanControlCommon::initializePort` opens `/dev/mem` and `/dev/gpio`, maps a 4 KiB register window, performs GPIO mode ioctls, adjusts control registers, waits, and records failures | `analysis/evidence/rea-wlan-initialize-port.json` | Confirmed locally from REA/Ghidra; exact register semantics remain unknown |
+| `libWlanResource.so` provides higher-level WLAN resource orchestration, including start/stop requests, host-driver load/unload, target-board initialization, and a main thread | `analysis/exports/firmware-3.21-network-stack-map.json` and private ELF symbols/strings | Confirmed locally as symbol metadata; caller and product-mode selection remain unknown |
+| `libInfraNetConnectionManager.so` exposes AP, WPS, group-owner, UPnP, auto-connect, saved-AP, completion, and event command boundaries | `analysis/exports/firmware-3.21-network-stack-map.json` and private ELF strings | Confirmed locally as symbol/string metadata |
+| `NetServiceArbitrator::procAsyncReqStartFunc` uses MWF send/receive, command tracking, an internal function counter, and fake-completion recovery | `analysis/evidence/rea-net-start.json` | Confirmed locally from REA/Ghidra; message payload fields remain unknown |
+| `libInfraMDnsControl.so` registers mDNS services from name, type, domain, TXT data, and port arguments, then tracks service records and IDs | `analysis/evidence/rea-mdns-register.json` | Confirmed locally from REA/Ghidra |
+| `libInfraNetFunctionManager.so` coordinates UPnP start/stop and forwards messages to `InfraStreamingServer` | `analysis/exports/firmware-3.21-network-stack-map.json` and private ELF symbols/strings | Confirmed locally as symbol/import metadata; process ownership remains unknown |
+| `libInfraRemoteControlNet.so` bridges network Web API requests to camera-state setters/getters and live-view state/URI operations | `analysis/exports/firmware-3.21-network-stack-map.json` and private ELF symbols | Confirmed locally as symbol metadata |
+| `RcWebAPIStartLiveviewComeback` requires remote-control state and a live-view state bit before calling an internal recovery routine | `analysis/evidence/rea-remote-liveview.json` | Confirmed locally from REA/Ghidra; state value `4` is not yet assigned a public semantic name |
+| `libInfraStreamingServer.so` contains live-view start/stop jobs, URL/port/filename lookup imports, JPEG content handlers, and network-service start/stop | `analysis/exports/firmware-3.21-network-stack-map.json` and private ELF symbols | Confirmed locally as symbol/import metadata |
+| `ContentHandlerEEImpl::GetLiveViewJpeg` requests frames through a synchronous OSAL message and maps the returned JPEG by ID and size | `analysis/evidence/rea-stream-liveview.json` | Confirmed locally from REA/Ghidra; frame message fields remain unknown |
 | The pinned Sony-PMCA-RE host implementation uses Sony MTP operations `0x9280`–`0x9285` for extension write/read, reconnect, burst-shot, and AV-index operations | `analysis/exports/host-ptp-command-map.json`; external source commit `a82f5baaa8e9c3d9f28f94699e860fb2e48cc8e0` | Confirmed locally from read-only source |
 | Sony extension requests use a 16-byte little-endian header with data size, command ID, direction, and eight reserved bytes | `analysis/exports/host-ptp-command-map.json` and pinned `pmca/usb/sony.py` | Confirmed locally from read-only source |
 | The host maps `(6, 2)` to `LensCommunicator_GetMountedLensInfo` and retries MTP operations while response `0x2019` indicates device busy | `analysis/exports/host-ptp-command-map.json` | Confirmed locally from read-only source; camera response not captured |
@@ -63,6 +74,10 @@ These are starting hypotheses. They become findings of this repository only afte
 - `libIMDB.so` may be a feature-library registry or selection point because it names all six libraries; the absence of a recovered loader procedure leaves this as a strong inference only.
 - `orb-server` may consume the web API library through configuration or an indirect loader path because it contains the library pathname without a `DT_NEEDED` edge; this remains a working hypothesis.
 - `libIMDB.so` likely stores target-selection metadata rather than directly loading every feature library; its exported lookup functions and fixed-size record scan support this narrower interpretation.
+- Sony's network code appears layered from board bring-up through connection arbitration, service discovery, remote-control state, and live-view content delivery. The layer boundaries are confirmed; the complete process graph is still a hypothesis.
+- `libInfraNetConnectionManager.so` likely arbitrates mutually exclusive network functions and synthesizes completions when a start request arrives while a function is already active. REA shows this behavior, but the policy table and all state meanings are not recovered.
+- `libInfraNetFunctionManager.so` likely acts as the coordinator between UPnP/device description and the streaming server because it imports UPnP start/stop methods and exposes streaming-server message jobs.
+- The most promising network porting seam is the remote-control/Web API and streaming boundary. WLAN bring-up is lower-level board code and should be deferred unless the feature changes radio behavior.
 
 ## Unknowns
 
@@ -75,6 +90,10 @@ These are starting hypotheses. They become findings of this repository only afte
 - Whether the `libIMDB.so` and `orb-server` string references correspond to `dlopen`, a static registry, diagnostic data, or another startup mechanism.
 - Which component consumes the `IMDB_find_entry` result and how target bits select optional Sony modules.
 - How the host's `(6, 2)` lens command appears on USB and which response fields correspond to `MountedLensInfo`.
+- Which process loads each network library, and in what order WLAN, connection manager, mDNS/UPnP, remote control, and streaming are started.
+- Which callers provide mDNS service names, UPnP descriptors, ports, URLs, and TXT records.
+- What the public network endpoint and framing protocol are for the `LiveViewLocator` and streaming content handlers.
+- What the network-service, ORB, and OSAL message payload layouts and state values mean, and which values are stable across firmware versions.
 
 ## Claim record format
 

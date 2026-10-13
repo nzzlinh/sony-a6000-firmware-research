@@ -187,6 +187,51 @@ Which user-space libraries form practical boundaries for USB/PTP, camera-control
 
 The static subsystem map is sufficient to begin M6. Remaining caller and load-order questions are carried forward as M6/M7 research questions.
 
+### M5 follow-up — network stack map
+
+Status: **complete for the static 3.21 slice**
+
+### Question
+
+How is the camera's network feature stack divided between WLAN hardware control, connection policy, discovery, remote control, and live-view delivery?
+
+### Inputs and prompts
+
+- Private `nflasha15` shared objects, bound by the hashes in [`firmware-3.21-network-stack-map.json`](../analysis/exports/firmware-3.21-network-stack-map.json).
+- `readelf --dyn-syms --wide`, `readelf --dynamic`, and `strings -a` against the private network libraries.
+- REA/Ghidra function analyses for `WlanControlCommon::initializePort`, `NetServiceArbitrator::procAsyncReqStartFunc`, `RcWebAPIStartLiveviewComeback`, `ContentHandlerEEImpl::GetLiveViewJpeg`, and `MDnsControl::RegisterOneService`.
+
+### Achievements
+
+- Separated WLAN board bring-up (`libWlanControlCommon.so`) from WLAN resource and product-mode orchestration (`libWlanResource.so`). The analyzed initialization path opens `/dev/mem` and `/dev/gpio`, maps registers, sets GPIO modes, and exposes explicit AR6000 driver/firmware paths.
+- Mapped the connection-policy layer in `libInfraNetConnectionManager.so`, including AP, WPS, group-owner, UPnP, and auto-connect commands/events. REA confirmed MWF request/response, command tracking, and fake-completion recovery.
+- Confirmed an mDNS registration boundary in `libInfraMDnsControl.so`; its analyzed function converts service arguments and calls `mDNS_RegisterService`, then assigns and tracks service IDs.
+- Confirmed `libInfraNetFunctionManager.so` as an UPnP and streaming-function coordinator from its imported `StartUpnpDevice`/`StopUpnpDevice` methods and streaming-server message jobs.
+- Mapped network remote control in `libInfraRemoteControlNet.so`, including Web API camera-state setters/getters, live-view URI/state, and a remote-state gate for live-view comeback.
+- Mapped `libInfraStreamingServer.so` as the JPEG delivery boundary. REA confirmed an OSAL frame request, readiness loop, and JPEG mapping path; the library also imports URL, port, filename, and IP lookup methods.
+- Added the layered network reference note and machine-readable inventory.
+
+### Confidence and limitations
+
+- **Confirmed:** library identities, hashes, sizes, direct dependencies, exported symbols, selected message/state behavior, mDNS registration, and JPEG retrieval path.
+- **Strong inference:** the layered graph and the upper network boundaries are practical porting seams.
+- **Unknown:** process ownership, service metadata, endpoint/framing protocol, authentication, complete message layouts, and cross-version stability.
+- **Not performed:** no camera was connected and no network or firmware write was issued.
+
+### Exit evidence
+
+- [`docs/08-network-stack.md`](08-network-stack.md)
+- [`analysis/exports/firmware-3.21-network-stack-map.json`](../analysis/exports/firmware-3.21-network-stack-map.json)
+- [`analysis/evidence/rea-wlan-initialize-port.json`](../analysis/evidence/rea-wlan-initialize-port.json)
+- [`analysis/evidence/rea-net-start.json`](../analysis/evidence/rea-net-start.json)
+- [`analysis/evidence/rea-mdns-register.json`](../analysis/evidence/rea-mdns-register.json)
+- [`analysis/evidence/rea-remote-liveview.json`](../analysis/evidence/rea-remote-liveview.json)
+- [`analysis/evidence/rea-stream-liveview.json`](../analysis/evidence/rea-stream-liveview.json)
+
+### Next action
+
+Recover callers and relocation edges for service metadata and endpoint construction, then compare the static map with a passive network capture if a camera is available.
+
 ## M6 — Runtime and protocol observation
 
 Status: **in progress**
