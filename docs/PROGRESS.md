@@ -120,10 +120,13 @@ How does Sony's updater package connect verification, action modes, NAND regions
 - `Plugin::Execute` dispatches `run` nodes to a DLL plugin and other nodes to `ShellPlugin::Execute`; the shell plugin constructs `EXTRACT_ROOT`, `PATH`, and `UPDATER_ACTION_MODE` before calling `system()`.
 - `PartitionImageKeyTag::Extract` delegates image extraction to the common firmware-file extractor, while `ApplicationKeyTag::PreExecute` mounts the application workspace.
 - `uc_mkfs.elf` parses `mount.conf` and emits `mkdosfs` commands for FAT-like entries in full mode.
+- The common extractor streams both ordinary files and partition image files into the updater workspace; the image extractor does not itself issue a NAND write.
+- The mount handler resolves configured device nodes and calls the Linux `mount()` path with `posix_attr` plus mode-dependent sync options.
+- The updater checksum key post hook mounts `/dev/nflasha2`, removes `/tmp_updater/updater/current`, and unmounts the setting partition after a successful procedure.
 
 ### Next action
 
-Trace the post-extraction key-tag hooks and native helpers that write or format NAND regions, beginning with `PartitionImageKeyTag`, `MountEntryHandler`, `edisx.elf`, `pformat_*`, and `ud_wbi_drop.elf`. Then connect those static paths to an authorized read-only runtime observation if suitable hardware is available.
+Trace the component that consumes workspace images after `PartitionImageKeyTag` extraction and the native helpers that write or format NAND regions, beginning with `edisx.elf`, `pformat_*`, and `ud_wbi_drop.elf`. Then connect those static paths to an authorized read-only runtime observation if suitable hardware is available.
 
 ## M5–M8
 

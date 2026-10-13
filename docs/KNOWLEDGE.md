@@ -20,6 +20,9 @@ This ledger separates information verified in this repository from external info
 | XML procedure nodes with `thread="yes"` are sent to a thread plugin; other nodes are dispatched synchronously | REA/Ghidra analysis of `XmlConfigHandler::Execute` at `0x237c4` | Confirmed locally |
 | Shell modules receive `EXTRACT_ROOT`, the updater body path in `PATH`, and a numeric `UPDATER_ACTION_MODE` before execution | REA/Ghidra analysis of `ShellPlugin::Execute` at `0x23f1c` and extracted shell environment | Confirmed locally |
 | Partition image extraction is delegated from `PartitionImageKeyTag` to the common packed-file extractor; application pre-execution mounts the application workspace | REA/Ghidra evidence at `0x20cc0` and `0x20890` | Confirmed locally |
+| The common updater extractor streams partition images into workspace files; the analyzed image extractor does not issue a NAND write itself | REA/Ghidra evidence at `BaseNewFirmwareFile::Extract`, `NewFirmwareImageFile::extractFile`, and `extractImageFile` | Confirmed locally |
+| Mount entries resolve configured device nodes and call Linux `mount()` with `posix_attr` plus mode-dependent synchronization options | REA/Ghidra evidence in `libupdaterbody.so` and `libupdatercommon.so` | Confirmed locally |
+| The updater checksum key post hook mounts the setting partition, removes `/tmp_updater/updater/current`, and unmounts it after a successful procedure | REA/Ghidra evidence at `0x20250` | Confirmed locally |
 
 ## Prior-art findings awaiting reproduction
 
