@@ -1,0 +1,22 @@
+# Private source artifacts and local analysis state
+*.dat
+*.bin
+*.img
+*.dmg
+*.exe
+*.apk
+*.7z
+*.zip
+*.tar
+*.raw
+*.dump
+firmware-*/
+analysis/private/
+analysis/ghidra-project/
+.venv/
+__pycache__/
+*.pyc
+
+# Local REA and tool output
+.rea/
+.tools/

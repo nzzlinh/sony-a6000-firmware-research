@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "artifacts": [
+    {
+      "id": "ilce-6000-firmware-3.21-official",
+      "kind": "firmware-updater",
+      "model": "Sony ILCE-6000",
+      "firmware_version": "3.21",
+      "source_url": "https://www.sony.com/electronics/support/e-mount-body-ilce-6000-series/ilce-6000/downloads",
+      "acquired_at": "2026-10-13",
+      "original_filename": "Update_ILCE6000V321.dmg",
+      "size_bytes": 214920547,
+      "sha256": "844349ff7edddc294c0fddd90a454848eeda8987b6bf043c9757982b3a42ba3e",
+      "storage": "private-until-distribution-rights-are-confirmed",
+      "public_derivatives": [],
+      "notes": "Downloaded from the official Sony redirect and stored privately at /home/zeelinh/sony-a6000-private/firmware-3.21/Update_ILCE6000V321.dmg. Do not commit the proprietary updater or decrypted firmware tree."
+    },
+    {
+      "id": "ilce-6000-firmware-data-3.21",
+      "kind": "firmware-payload",
+      "model": "Sony ILCE-6000",
+      "firmware_version": "3.21",
+      "source_url": "private extraction from ilce-6000-firmware-3.21-official",
+      "acquired_at": "2026-10-13",
+      "original_filename": "FirmwareData_ILCE6000V321.dat",
+      "size_bytes": 212988056,
+      "sha256": "29aef21ab9b5c2e98388974ac9749c2cbfb1815273b444e62f2e41398aa8892f",
+      "storage": "private-until-distribution-rights-are-confirmed",
+      "public_derivatives": ["DMG member path", "size", "SHA-256", "recursive inventory", "partition CRC32 verification"],
+      "notes": "Extracted from the official DMG using a local 7-Zip 23.01 binary and fwtool.py commit cdba742b73eed5981480c326aeb30033aabf0223. The expanded private tree contains 1,398 files and 1,181,012,182 bytes."
+    },
+    {
+      "id": "ilce-6000-firmware-3.21-partinf",
+      "kind": "partition-configuration",
+      "model": "Sony ILCE-6000",
+      "firmware_version": "3.21",
+      "source_url": "private extraction from ilce-6000-firmware-data-3.21",
+      "acquired_at": "2026-10-13",
+      "original_filename": "0300_partconf/partinf.conf",
+      "size_bytes": 4060,
+      "sha256": "c622e17b5aa83282b013a0d7b571243e30d7b8e39e8d3792ae2b1143feb80d26",
+      "storage": "private-source-derived-public-map",
+      "public_derivatives": ["docs/03-region-map.md"],
+      "notes": "Sony-declared NAND layout. It is not a raw-dump verification."
+    },
+    {
+      "id": "ilce-6000-firmware-3.21-updater-image",
+      "kind": "updater-image",
+      "model": "Sony ILCE-6000",
+      "firmware_version": "3.21",
+      "source_url": "private extraction from ilce-6000-firmware-data-3.21",
+      "acquired_at": "2026-10-13",
+      "original_filename": "updater.img",
+      "size_bytes": 143360,
+      "sha256": "b6d5175245c8fb26879c5376f0e6e0d9ff13064f805d591954ff2a48a8c2566c",
+      "storage": "private-source-derived-public-inventory",
+      "public_derivatives": ["analysis/exports/firmware-3.21-inventory.json"],
+      "notes": "Recognized as Linux CramFS containing ARM EABI5 helper binaries and shell scripts."
+    },
+    {
+      "id": "ilce-6000-firmware-3.21-uc-crc32sum",
+      "kind": "native-analysis-subject",
+      "model": "Sony ILCE-6000",
+      "firmware_version": "3.21",
+      "source_url": "private extraction from ilce-6000-firmware-3.21-updater-image",
+      "acquired_at": "2026-10-13",
+      "original_filename": "updater.img_unpacked/bin/uc_crc32sum.elf",
+      "size_bytes": 10028,
+      "sha256": "8e368185be4a074034a3f86a7ff06123ba0936e5cb70fea963009f6f8628f4da",
+      "storage": "private-source-derived-public-evidence",
+      "public_derivatives": ["docs/04-updater-crc32-case.md", "analysis/evidence/rea-uc-crc32-0x8a94.json"],
+      "notes": "32-bit ARM EABI5 stripped helper. Static REA/Ghidra analysis confirmed the CRC-32/IEEE implementation and sum-record validation path."
+    },
+    {
+      "id": "ilce-6000-firmware-3.21-updater-body-library",
+      "kind": "native-analysis-subject",
+      "model": "Sony ILCE-6000",
+      "firmware_version": "3.21",
+      "source_url": "private extraction from ilce-6000-firmware-3.21-updater-image",
+      "acquired_at": "2026-10-13",
+      "original_filename": "updater.img_unpacked/bodylib/libupdaterbody.so",
+      "size_bytes": 105932,
+      "sha256": "8d1dc242decea362c65c6dcaf320046df93f06e2fc97c547b7b250b2cc3057d6",
+      "storage": "private-source-derived-public-evidence",
+      "public_derivatives": ["docs/05-update-procedure-map.md", "analysis/exports/firmware-3.21-updater-body-symbols.json"],
+      "notes": "32-bit ARM EABI5 shared library with 734 dynamic symbols. Static REA/Ghidra analysis recovered the packed-file, XML, plugin, and key-tag procedure path."
+    }
+  ]
+}

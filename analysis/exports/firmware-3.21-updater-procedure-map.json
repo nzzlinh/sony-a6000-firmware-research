@@ -1,0 +1,38 @@
+{
+  "firmware": "ILCE-6000 3.21",
+  "updater_body": {
+    "chassis": "CXD90014",
+    "body_version": "41.01.28",
+    "config_path": "updater.img_unpacked/config/config.xml",
+    "config_sha256": "31b2ff3c3f7d7f2f002495debd71c18bb8bc3707196025423a4f3d74fe15b38c"
+  },
+  "procedures": [
+    {"key": "config_sum/config.sum", "shell": "us_crc32sum.sh", "actions": ["chkfirm.sh", "edit_mount.sh", "keep_big_backup.sh"], "payload": "0100_config"},
+    {"key": "updater_sum/updater.sum", "shell": "us_crc32sum.sh", "actions": [], "payload": "updater.img"},
+    {"key": "appli_sum/appli.sum", "shell": "us_crc32sum_appli.sh", "actions": [], "payload": "0800_appli"},
+    {"key": "part_image_sum/part_image.sum", "shell": "us_crc32sum.sh", "actions": [], "payload": "0700_part_image"},
+    {"key": "partconf/partinf.conf", "shell": "chknandcapa.elf", "actions": [], "payload": "0300_partconf"},
+    {"key": "partconf_sum/partconf.sum", "shell": "us_crc32sum.sh", "actions": ["us_mkfs.sh"], "payload": "0300_partconf"},
+    {"key": "front_sum/front.sum", "shell": "us_crc32sum.sh", "actions": ["us_front_firmup.sh"], "payload": "front (optional)"},
+    {"key": "ca_sum/ca.sum", "shell": "us_crc32sum.sh", "actions": ["us_ca_firm.sh"], "payload": "0630_ca (optional)"},
+    {"key": "darwin_sum/darwin.sum", "shell": "us_crc32sum.sh", "actions": ["us_darwin_firm.sh"], "payload": "0640_darwin (script absent in this body)"},
+    {"key": "prfile_sum/prfile.sum", "shell": "us_crc32sumprfile.sh", "actions": [], "payload": "0650_prfile"},
+    {"key": "backup_sum/backup.sum", "shell": "us_crc32sum_backup.sh", "actions": [], "payload": "0110_backup"},
+    {"key": "accsy_sum/accsy.sum", "shell": "us_crc32sum.sh", "actions": [], "payload": "accessory (optional)"},
+    {"key": "loader_sum/loader.sum", "shell": "us_crc32sum.sh", "actions": ["loader_writer.sh"], "payload": "loader (optional)"}
+  ],
+  "action_modes": {
+    "product": 1,
+    "loader_updater": 2,
+    "user": 3,
+    "service": 4,
+    "minor": 5,
+    "mscrypt": 6,
+    "version_skip": 7
+  },
+  "native_cross_checks": [
+    {"binary": "updater.img_unpacked/bin/uc_mkfs.elf", "sha256": "c422eaae45cb38ba5463cebbc945b5b993608633436e310b5d127b00748f102b", "functions": ["0x8744", "0x886c", "0x893c", "0x8a94"]},
+    {"binary": "updater.img_unpacked/bin/edisx.elf", "sha256": "156d2b32077f9d13a54e6e577c2abb1e15c8c80b68acd16eb1013be089af75ca", "functions": ["entry 0x8820; indirect main pointer observed"]}
+  ],
+  "publication": "Derived metadata only; proprietary firmware bytes remain private."
+}

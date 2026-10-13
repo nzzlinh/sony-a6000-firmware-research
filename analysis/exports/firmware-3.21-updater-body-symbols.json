@@ -1,0 +1,31 @@
+{
+  "subject": "updater.img_unpacked/bodylib/libupdaterbody.so",
+  "sha256": "8d1dc242decea362c65c6dcaf320046df93f06e2fc97c547b7b250b2cc3057d6",
+  "format": "ELF 32-bit ARM EABI5 shared object",
+  "dynamic_symbol_count": 734,
+  "symbol_source": "readelf --dyn-syms --wide",
+  "address_note": "readelf values are the ELF symbol values; REA/Ghidra may present Thumb function entries at the even address after loader normalization.",
+  "selected_symbols": [
+    {"name": "Updater::UpdaterBody::Execute", "elf_value": "0x0000f4c9", "size": 1652},
+    {"name": "Updater::XmlConfigHandler::Execute", "elf_value": "0x000137c5", "size": 200},
+    {"name": "Updater::XmlConfigHandler::LoadConfig", "elf_value": "0x00013342", "size": null},
+    {"name": "Updater::XmlConfigHandler::Join", "elf_value": "0x00013768", "size": null},
+    {"name": "Updater::Plugin::Execute", "elf_value": "0x0001443d", "size": 496},
+    {"name": "Updater::ShellPlugin::Execute", "elf_value": "0x00013f1d", "size": 648},
+    {"name": "Updater::BuildInPlugin::execute", "elf_value": "0x000148e9", "size": 472},
+    {"name": "Updater::BuildInPlugin::StartUpdate", "elf_value": "0x00014aed", "size": 44},
+    {"name": "Updater::BuildInPlugin::EndUpdate", "elf_value": "0x00014ac0", "size": null},
+    {"name": "Updater::PartitionImageKeyTag::Extract", "elf_value": "0x00010cc1", "size": 288},
+    {"name": "Updater::ApplicationKeyTag::PreExecute", "elf_value": "0x00010891", "size": 252},
+    {"name": "Updater::ApplicationKeyTag::PostExecute", "elf_value": "0x00010831", "size": null},
+    {"name": "Updater::BaseNewFirmwareFile::Extract", "elf_value": "0x00012261", "size": 164},
+    {"name": "Updater::NewFirmwareFile::extractNormalFile", "elf_value": "0x000125bd", "size": 396},
+    {"name": "Updater::NewFirmwareImageFile::extractFile", "elf_value": "0x00012bfd", "size": 168},
+    {"name": "Updater::MountEntryHandler::Mount", "elf_value": "0x00011d49", "size": 220},
+    {"name": "Updater::MountEntryHandler::fsck", "elf_value": "0x00011c49", "size": 128},
+    {"name": "Updater::PrFILEMountEntryHandler::Format", "elf_value": "0x00011bc9", "size": 128},
+    {"name": "Updater::FsysFileHandler::Open", "elf_value": "0x00015f61", "size": 22},
+    {"name": "Updater::FsysFileHandler::Write", "elf_value": "0x00015fa5", "size": 92}
+  ],
+  "publication": "Selected dynamic symbol metadata only; the shared object remains private."
+}

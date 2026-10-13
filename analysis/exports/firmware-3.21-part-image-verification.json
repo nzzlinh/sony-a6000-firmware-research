@@ -1,0 +1,32 @@
+[
+  {
+    "path": "dev/nflasha7",
+    "expected_crc32": "b969856d",
+    "actual_crc32": "b969856d",
+    "match": true
+  },
+  {
+    "path": "dev/nflasha5",
+    "expected_crc32": "9cb10112",
+    "actual_crc32": "9cb10112",
+    "match": true
+  },
+  {
+    "path": "dev/nflasha15",
+    "expected_crc32": "df198ecd",
+    "actual_crc32": "df198ecd",
+    "match": true
+  },
+  {
+    "path": "dev/nflasha16",
+    "expected_crc32": "c77af80c",
+    "actual_crc32": "c77af80c",
+    "match": true
+  },
+  {
+    "path": "dev/nflasha3",
+    "expected_crc32": "0c047870",
+    "actual_crc32": "0c047870",
+    "match": true
+  }
+]
