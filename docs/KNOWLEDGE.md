@@ -35,6 +35,9 @@ This ledger separates information verified in this repository from external info
 | `libIMDB.so` exports target-selection functions; `IMDB_find_entry` scans records by target ID and mask, and `IMDB_find_target_bit` maps target names to bit positions | `analysis/evidence/rea-imdb-find-entry.json` and `analysis/evidence/rea-imdb-find-target-bit.json` | Confirmed locally; registry callers remain unknown |
 | `bin/orb-server` contains `/usr/lib/libInfraWebApi.so` but does not list it in `DT_NEEDED` | `analysis/exports/firmware-3.21-feature-host-candidates.json` | Confirmed locally; host ownership is a working hypothesis |
 | `libOnDemandLoader.so` contains singleton initialization and load-program manager methods | `analysis/exports/firmware-3.21-feature-host-candidates.json` and `analysis/evidence/rea-ondemand-loader-init.json` | Confirmed locally; relationship to feature-library loading is unknown |
+| The pinned Sony-PMCA-RE host implementation uses Sony MTP operations `0x9280`–`0x9285` for extension write/read, reconnect, burst-shot, and AV-index operations | `analysis/exports/host-ptp-command-map.json`; external source commit `a82f5baaa8e9c3d9f28f94699e860fb2e48cc8e0` | Confirmed locally from read-only source |
+| Sony extension requests use a 16-byte little-endian header with data size, command ID, direction, and eight reserved bytes | `analysis/exports/host-ptp-command-map.json` and pinned `pmca/usb/sony.py` | Confirmed locally from read-only source |
+| The host maps `(6, 2)` to `LensCommunicator_GetMountedLensInfo` and retries MTP operations while response `0x2019` indicates device busy | `analysis/exports/host-ptp-command-map.json` | Confirmed locally from read-only source; camera response not captured |
 
 ## Prior-art findings awaiting reproduction
 
@@ -71,6 +74,7 @@ These are starting hypotheses. They become findings of this repository only afte
 - What the PTP extension command IDs, ORB message IDs, and lens message fields mean on a live camera.
 - Whether the `libIMDB.so` and `orb-server` string references correspond to `dlopen`, a static registry, diagnostic data, or another startup mechanism.
 - Which component consumes the `IMDB_find_entry` result and how target bits select optional Sony modules.
+- How the host's `(6, 2)` lens command appears on USB and which response fields correspond to `MountedLensInfo`.
 
 ## Claim record format
 

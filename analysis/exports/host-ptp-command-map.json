@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "source_repository": {
+    "name": "Sony-PMCA-RE",
+    "remote": "https://github.com/ma1co/Sony-PMCA-RE.git",
+    "commit": "a82f5baaa8e9c3d9f28f94699e860fb2e48cc8e0",
+    "scope": "Read-only host-side protocol reference; no files were changed in the external checkout."
+  },
+  "source_files": [
+    {"path": "pmca/usb/sony.py", "sha256": "53ffb4d9d49cb5146623fda2b66ecb137681a6fc9ab0c98d23a51e75128af97e"},
+    {"path": "pmca/usb/__init__.py", "sha256": "db2fd3d0dfa2e6f315a14291be8951a5092875e8e5858183cabf2cec46a0fcda"},
+    {"path": "pmca/usb/driver/windows/wpd.py", "sha256": "16335ea608d43bb50bc27721e55d7c154fe4b5fbd80ffebcc001a55675195720"},
+    {"path": "pmca/platform/backend/usb/transfer.py", "sha256": "69f6f9f76d5444b8450004686285fafaeecb6ae59976877687a4a64de340f8bb"}
+  ],
+  "transport": {
+    "standard_ptp": {
+      "open_session": "0x1002",
+      "close_session": "0x1003",
+      "device_info": "0x1001",
+      "device_busy_response": "0x2019"
+    },
+    "sony_mtp_operations": {
+      "extension_write": "0x9280",
+      "extension_read": "0x9281",
+      "request_reconnect": "0x9282",
+      "get_burstshot_group_number": "0x9283",
+      "get_burstshot_object_handles": "0x9284",
+      "get_av_index_id": "0x9285"
+    },
+    "mass_storage_extension": {
+      "msc_operation": "0x7a",
+      "command_packet": "u8 operation 0x7a + u32 little-endian command + seven zero bytes",
+      "busy_sense": ["0x09", "0x81", "0x81"]
+    }
+  },
+  "sony_extension_command": {
+    "header": [
+      {"name": "dataSize", "type": "u32", "encoding": "little-endian"},
+      {"name": "cmd", "type": "u16", "encoding": "little-endian"},
+      {"name": "direction", "type": "u16", "encoding": "little-endian"},
+      {"name": "reserved", "size_bytes": 8}
+    ],
+    "header_size_bytes": 16,
+    "host_default_write_buffer": "0x2000",
+    "host_default_read_buffer": "0x2000",
+    "direction_used_by_host_helper": "0",
+    "mtp_write_sequence": ["MTP operation 0x9280 with service ID as parameter", "extension header plus payload", "check response"],
+    "mtp_read_sequence": ["MTP operation 0x9281 with service ID as parameter", "receive extension header plus payload", "return dataSize bytes after header", "check response"]
+  },
+  "service_command_ids": {
+    "DevInfoSender": {"service": 1, "commands": {"get_model_info": 1, "get_supported_command_ids": 2}},
+    "ExtBackupCommunicator": {"service": 4, "commands": {"get_supported_command_ids": 1, "notify_backup_type": 2, "notify_backup_start": 3, "notify_backup_finish": 4, "force_power_off": 5, "get_registerable_host_count": 6, "get_registered_host_network_info": 7, "force_register_host_network_info": 8, "get_device_network_info": 9}},
+    "LensCommunicator": {"service": 6, "commands": {"get_supported_command_ids": 1, "get_mounted_lens_info": 2}},
+    "NetworkServiceInfo": {"service": 7, "commands": {"get_supported_command_ids": 1, "set_live_streaming_service_info": 2, "get_live_streaming_service_info": 3, "set_live_streaming_sns_info": 4, "get_live_streaming_sns_info": 5, "set_wifi_ap_info": 6, "get_wifi_ap_info": 7, "get_live_streaming_last_error": 8, "set_multi_wifi_ap_info": 9, "get_multi_wifi_ap_info": 10}}
+  },
+  "firmware_links": {
+    "mtp_server": "nflasha15/lib/libInfraMtpServer.so retains the Sony MTP operation implementation boundary.",
+    "ptp_extension": "nflasha15/lib/libInfraPtpExtCmd.so retains command attachment, transfer, and PTP packet helper imports.",
+    "lens_communicator": "nflasha15/lib/libInfraLensCommunicator.so retains InitCmd, supported-command, mounted-lens, and transfer-completion symbols."
+  },
+  "confidence": "Confirmed host-side encoding and command constants from the pinned external source; camera behavior and firmware-version compatibility are not runtime-confirmed here."
+}

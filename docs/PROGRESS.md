@@ -132,7 +132,7 @@ Trace the component that consumes workspace images after `PartitionImageKeyTag` 
 
 ### M5 — Feature subsystem map
 
-Status: **in progress**
+Status: **complete**
 
 ### Question
 
@@ -185,11 +185,45 @@ Which user-space libraries form practical boundaries for USB/PTP, camera-control
 
 ### Next action
 
-Record relocation and caller edges for the PTP, web API, and lens libraries. Then inspect startup configuration and compare the same symbol families across another official firmware package before attempting passive protocol observation.
+The static subsystem map is sufficient to begin M6. Remaining caller and load-order questions are carried forward as M6/M7 research questions.
 
 ## M6 — Runtime and protocol observation
 
-Status: **queued**
+Status: **in progress**
+
+### Question
+
+How does the PC-side Sony protocol reach the firmware service boundaries, and what is the smallest safe read-only exchange for validating the static map?
+
+### Inputs and commands
+
+- External source: `/home/zeelinh/Sony-PMCA-RE`, remote `https://github.com/ma1co/Sony-PMCA-RE.git`, commit `a82f5baaa8e9c3d9f28f94699e860fb2e48cc8e0`.
+- Read-only source inspection: `pmca/usb/sony.py`, `pmca/usb/__init__.py`, `pmca/usb/driver/windows/wpd.py`, and `pmca/platform/backend/usb/transfer.py`.
+- Reproduction commands: `git rev-parse HEAD`, `sha256sum <source files>`, and line-oriented inspection of the Sony MTP and extension-command classes.
+
+### Achievements
+
+- Recorded normal PTP operations `0x1001`–`0x1003` and Sony operations `0x9280`–`0x9285`.
+- Documented the Sony extension header as a 16-byte little-endian structure containing `dataSize`, `cmd`, `direction`, and eight reserved bytes.
+- Documented the MTP write/read sequences, PTP `DeviceBusy` retry code `0x2019`, and the mass-storage extension envelope beginning with operation `0x7a`.
+- Recorded service IDs for the lens communicator, backup communicator, device information, and network-service commands.
+- Connected the host comment identifying the MTP operation codes as defined by `libInfraMtpServer.so` to the firmware symbol map.
+- Added a bounded first-capture procedure centered on the read-only `(6, 2)` mounted-lens command.
+
+### Confidence and limitations
+
+- **Confirmed:** host-side packet and structure encoding from the pinned source files and their hashes.
+- **Strong inference:** `(6, 2)` is a useful static-to-wire lens path because it maps to both host command code and firmware `LensCommunicator` symbols.
+- **Unknown:** actual ILCE-6000 response bytes, USB descriptors in the tested mode, command enablement on firmware 3.21, and any payload fields not defined by the host source.
+
+### Exit evidence so far
+
+- `docs/07-usb-ptp-protocol-boundary.md`
+- `analysis/exports/host-ptp-command-map.json`
+
+### Next action
+
+If an explicitly authorized camera is available, capture a normal MTP session and one read-only mounted-lens request. Otherwise continue static reconstruction of the host candidate and firmware service callers without issuing camera commands.
 
 ## M7 — Cross-version comparison and porting boundaries
 
