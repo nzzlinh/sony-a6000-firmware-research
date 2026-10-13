@@ -54,6 +54,12 @@ This ledger separates information verified in this repository from external info
 | The pinned Sony-PMCA-RE host implementation uses Sony MTP operations `0x9280`–`0x9285` for extension write/read, reconnect, burst-shot, and AV-index operations | `analysis/exports/host-ptp-command-map.json`; external source commit `a82f5baaa8e9c3d9f28f94699e860fb2e48cc8e0` | Confirmed locally from read-only source |
 | Sony extension requests use a 16-byte little-endian header with data size, command ID, direction, and eight reserved bytes | `analysis/exports/host-ptp-command-map.json` and pinned `pmca/usb/sony.py` | Confirmed locally from read-only source |
 | The host maps `(6, 2)` to `LensCommunicator_GetMountedLensInfo` and retries MTP operations while response `0x2019` indicates device busy | `analysis/exports/host-ptp-command-map.json` | Confirmed locally from read-only source; camera response not captured |
+| The previous public maps covered camera-control and JPEG delivery boundaries but did not cover the color/image processing implementation | `docs/06-subsystem-map.md`, `docs/07-usb-ptp-protocol-boundary.md`, `docs/08-network-stack.md`, `docs/10-image-processing.md` | Confirmed locally from the repository's documented scope |
+| `libScalarDaemon.so` exports camera color/image parameter and filter boundaries, including RGB matrix, color depth, white-balance shift, contrast, saturation, sharpness, color space, picture effects, and extended gamma operations | `analysis/exports/firmware-3.21-image-processing-map.json`; private ELF dynamic symbols | Confirmed locally as symbol metadata; downstream pixel effect is not yet traced |
+| `dataflowInfraFramework.so` exports raw, YC state/colorimetry, effect, image-size, output-timing, display, camera, face, and movie-quality data records | `analysis/exports/firmware-3.21-image-processing-map.json`; private ELF dynamic symbols | Confirmed locally as a static data contract |
+| `libStm.so` exposes image-instance operations and raw parsing, while `libmpr.so` exposes still encode, still write/read/playback, RAW development, record definition, and XvYCC metadata operations | `analysis/exports/firmware-3.21-image-processing-map.json`; private ELF dynamic symbols | Confirmed locally as static boundaries; callers and parameter layouts remain unknown |
+| The `nflasha15/sabin` inventory contains named JPEG, AVC, noise-reduction, sharpening, detection, panorama, and still/movie table payloads | `analysis/exports/firmware-3.21-image-processing-map.json`; private file inventory | Confirmed locally as payload filenames; loader and runtime roles remain unknown |
+| `CAMERA_SCN_EXTERNAL_RAW_RECORD.so` is an explicit RAW-record scenario module, and neighboring media/object libraries expose diagnostic raw-YC/JPEG/display controls | `analysis/exports/firmware-3.21-image-processing-map.json`; private scenario and ELF metadata | Confirmed locally as scenario/diagnostic boundaries; ordinary RAW/JPEG production is not yet connected |
 
 ## Prior-art findings awaiting reproduction
 
@@ -85,6 +91,8 @@ These are starting hypotheses. They become findings of this repository only afte
 - The most promising network porting seam is the remote-control/Web API and streaming boundary. WLAN bring-up is lower-level board code and should be deferred unless the feature changes radio behavior.
 - `libNetService.so` is a likely TLS/crypto boundary for at least one network service because it owns TLS adapter wrappers and software AES/RSA helpers; the exact transfer caller remains unresolved.
 - For a large file, RSA should be a handshake/key-management cost while AES-CBC scales linearly with payload bytes. If SD reads do not matter, the limiting term should be the minimum of effective WLAN throughput, software AES/TLS throughput, and the network-service producer/consumer path.
+- `libScalarDaemon.so` likely provides the camera color/image setting control plane, while `libmpr.so` and `libStm.so` provide media and image-instance boundaries behind the shared YC/dataflow framework. The symbol set supports this organization, but the exact sensor/ISP and accelerator paths remain open.
+- The `sabin/` payload names likely represent lower-level image/video engines or tables. Their names identify useful REA targets, but they do not prove a loader, instruction set, or parameter ABI.
 
 ## Unknowns
 
@@ -103,6 +111,10 @@ These are starting hypotheses. They become findings of this repository only afte
 - What the network-service, ORB, and OSAL message payload layouts and state values mean, and which values are stable across firmware versions.
 - Which caller selects the TLS cipher list and whether the large-file path uses `TLS_RSA_WITH_AES_128_CBC_SHA` or another compatible suite.
 - What CPU frequency/utilization and sustained MB/s the camera achieves for plaintext and TLS transfers at different application chunk sizes.
+- Which `libScalarDaemon.so` command/event messages carry RGB matrix, gamma, white balance, and image-effect values into the lower image graph.
+- Which callers connect `libStm.so` raw parsing and `libmpr.so` `MprIf::EncodeStill` to the YC/dataflow records.
+- Which process loads the `sabin/` payloads, and which still/movie/live-view modes select each payload.
+- Where sensor readout, black-level correction, defect correction, Bayer conversion, color matrix, tone mapping, and JPEG quantization occur.
 
 ## Claim record format
 

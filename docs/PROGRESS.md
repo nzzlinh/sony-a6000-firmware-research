@@ -310,6 +310,39 @@ How does the PC-side Sony protocol reach the firmware service boundaries, and wh
 
 If an explicitly authorized camera is available, capture a normal MTP session and one read-only mounted-lens request. Otherwise continue static reconstruction of the host candidate and firmware service callers without issuing camera commands.
 
+### M6 follow-up — image and color processing inventory
+
+Status: **started**
+
+### Question
+
+Which firmware boundaries carry camera color settings, YC/image metadata, still encode/decode, RAW parsing, and the lower-level image/video payloads?
+
+### Achievements
+
+- Confirmed that the previous subsystem, USB, and network documents covered control and image-delivery interfaces but did not cover the processing implementation.
+- Identified `libScalarDaemon.so` as the strongest static color/image setting boundary. Its symbols include RGB matrix, color depth, white-balance shift, contrast, saturation, sharpness, color space, cinema tone, picture effects, extended gamma, and image-filter operations.
+- Identified `dataflowInfraFramework.so` as the shared YC/image metadata contract. It exposes raw, YC state, colorimetry, effect, image-size, output-timing, display, camera, face, and movie-quality records.
+- Identified `libStm.so` as the image-instance and raw-parse boundary, and `libmpr.so` as the media boundary for still encode, write/read/playback, RAW development, record definition, and XvYCC metadata.
+- Identified `libBizFw.so`, `libBizFw2.so`, and `libObj.so` as lower-level AVBBC/dataflow/view bridges around image, display, effect, SDI, and media operations.
+- Catalogued the `sabin/` payload names for JPEG, AVC, noise reduction, sharpening, detection, panorama, and still/movie coefficient/table candidates. The loader and payload interface remain unresolved.
+- Recorded a metadata-only image-processing map and a public boundary note without copying proprietary firmware code, strings, or binary payloads.
+
+### Confidence and limitations
+
+- **Confirmed:** the named files, hashes, direct dependencies, exported symbols, and image/media payload filenames belong to the private ILCE-6000 3.21 extraction.
+- **Strong inference:** `libScalarDaemon.so` is the camera color/image parameter control plane; `libmpr.so` is the still/media operation boundary; `dataflowInfraFramework.so` is the shared YC/image metadata contract.
+- **Unknown:** sensor/ISP ownership, Bayer/demosaic details, exact color matrices and gamma tables, payload loading, message structures, runtime process ownership, and cross-version stability.
+
+### Exit evidence
+
+- [`docs/10-image-processing.md`](10-image-processing.md)
+- [`analysis/exports/firmware-3.21-image-processing-map.json`](../analysis/exports/firmware-3.21-image-processing-map.json)
+
+### Next action
+
+Use REA to trace `libScalarDaemon.so` color-setting command processors, `libStm.so` raw parsing, and the `libmpr.so` `MprIf::EncodeStill` caller chain. Then recover the `sabin/` loader and correlate one still or live-view output path with a controlled observation.
+
 ## M7 — Cross-version comparison and porting boundaries
 
 Status: **queued**

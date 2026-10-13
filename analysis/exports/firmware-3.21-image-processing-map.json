@@ -1,0 +1,198 @@
+{
+  "schema_version": 1,
+  "firmware": "ILCE-6000 3.21",
+  "partition": "nflasha15",
+  "partition_role": "System Main / user-space camera services and image framework",
+  "source_policy": "Derived file metadata, ELF symbol metadata, direct dependency metadata, and bounded role annotations only; proprietary ELF files and binary payloads remain private.",
+  "status": "initial static inventory",
+  "layers": [
+    {
+      "id": "color-control",
+      "role": "Camera color/image settings, system-event parameter processing, and image filters",
+      "libraries": ["lib/libScalarDaemon.so", "lib/libsdcom.so"],
+      "confidence": "confirmed as a static control boundary",
+      "limitation": "The runtime process owner and downstream image-engine callers are not yet mapped."
+    },
+    {
+      "id": "setting-model",
+      "role": "UI/model conversion for creative style, white balance, image quality, and image size",
+      "libraries": ["lib/wrapperCreativeStyle.so", "lib/wrapperWhiteBalance.so", "lib/wrapperImageQuality.so", "lib/wrapperImageSize.so", "lib/cmn_view_processDataMgr.so"],
+      "confidence": "confirmed as a static setting boundary",
+      "limitation": "These wrappers expose setting translation; they are not evidence of pixel-processing implementation."
+    },
+    {
+      "id": "yc-dataflow",
+      "role": "Shared YC/raw/effect/image-size/output-timing records and pin messaging",
+      "libraries": ["lib/dataflowInfraFramework.so", "lib/libBizFw.so", "lib/libBizFw2.so"],
+      "confidence": "confirmed as a static data contract",
+      "limitation": "Pin IDs, message layouts, and complete producer/consumer graph remain unresolved."
+    },
+    {
+      "id": "image-instance-and-raw",
+      "role": "Image-instance memory operations, parse/raw-parse, and dataflow image metadata",
+      "libraries": ["lib/libStm.so", "lib/libHapiLib.so"],
+      "confidence": "confirmed as a static image-buffer boundary",
+      "limitation": "The raw buffer format and sensor/ISP handoff are unknown."
+    },
+    {
+      "id": "media-recording",
+      "role": "Still encode, still write/read/playback, RAW development, record definition, and XvYCC metadata",
+      "libraries": ["lib/libmpr.so", "lib/libmprctrl.so", "lib/libObj.so"],
+      "confidence": "confirmed as a static media boundary",
+      "limitation": "The caller chain into the image engine and the exact encode parameter structures need REA tracing."
+    },
+    {
+      "id": "lower-level-payloads",
+      "role": "Named still/movie codec, noise-reduction, sharpening, detection, panorama, and coefficient payloads",
+      "paths": ["sabin/"],
+      "confidence": "confirmed as a payload inventory; processing roles are name-based",
+      "limitation": "The payload loader, instruction set, parameter blocks, and runtime mode selection are not yet recovered."
+    },
+    {
+      "id": "raw-and-diagnostics",
+      "role": "External RAW scenario and diagnostic raw-YC/JPEG/display capture commands",
+      "libraries": ["scenario/CAMERA_SCN_EXTERNAL_RAW_RECORD.so", "lib/libInfraMediaCommon.so", "lib/libObj.so", "lib/libsencore.so"],
+      "confidence": "confirmed as static diagnostic/scenario boundaries",
+      "limitation": "Ordinary saved RAW/JPEG production has not been connected to these paths."
+    },
+    {
+      "id": "image-delivery",
+      "role": "JPEG/live-view retrieval and network content delivery",
+      "libraries": ["lib/libInfraStreamingServer.so", "lib/libInfraMtpServer.so"],
+      "confidence": "confirmed as output boundaries",
+      "limitation": "These libraries do not prove ownership of demosaic, color conversion, or JPEG encoding."
+    }
+  ],
+  "representative_files": [
+    {
+      "path": "lib/libScalarDaemon.so",
+      "size_bytes": 1883224,
+      "sha256": "ca28cbf4c5c6402160ad80f6ad9f5e99052f42c3fabc382c557fcded18addc29",
+      "role": "camera color/image parameter and filter control",
+      "dt_needed": ["libsdcom.so", "libpthread.so.0", "libstdc++.so.6", "libm.so.6", "libdl.so.2", "libgcc_s.so.1", "libc.so.6", "librt.so.1"],
+      "representative_symbols": [
+        "SCALARDAEMON::SystemEventIssuerCamera::setRgbMatrix",
+        "SCALARDAEMON::SystemEventIssuerCamera::setColorCorrect",
+        "SCALARDAEMON::SystemEventIssuerCamera::setExtendedGammaTable",
+        "SCALARDAEMON::SystemEventIssuerCameraParameter::setColorMode",
+        "SCALARDAEMON::SystemEventIssuerCameraParameter::setWhiteBalanceShift",
+        "SCALARDAEMON::SystemEventIssuerCameraParameter::setColorSpace",
+        "SCALARDAEMON::SystemEventIssuerCameraParameter::setCinemaTone",
+        "SCALARDAEMON::SystemEventIssuerCameraParameter::setContrastLevel",
+        "SCALARDAEMON::SystemEventIssuerCameraParameter::setSaturationLevel",
+        "SCALARDAEMON::SystemEventIssuerCameraParameter::setSharpnessLevel",
+        "SCALARDAEMON::SystemEventIssuerImageFilter::filterArtEffect",
+        "SCALARDAEMON::SystemEventIssuerImageFilter::filterHDR",
+        "SCALARDAEMON::SystemEventIssuerCommon::getTicketRawParseInfo"
+      ]
+    },
+    {
+      "path": "lib/dataflowInfraFramework.so",
+      "size_bytes": 139096,
+      "sha256": "05c0dbb49c9a9519cda65a911a1b5837bb772383a9a181e96468f7b75f5b687b",
+      "role": "YC/raw/effect/image-size/output-timing data records"
+    },
+    {
+      "path": "lib/libStm.so",
+      "size_bytes": 24104,
+      "sha256": "0232560c2cfc04d7ed0309e1046e2d4954a56dc1eeac8899d6666699d35825bd",
+      "role": "image instances, memory extents, parse, and raw-parse"
+    },
+    {
+      "path": "lib/libmpr.so",
+      "size_bytes": 10321204,
+      "sha256": "9a74a3bb42836559888509b6113d281b85ae53b03eb9cdf4a965eafb545e4c30",
+      "role": "media recorder/player and still encode/decode operations",
+      "dt_needed": ["libInfraFsys.so", "libInfraMediaDetect.so", "libInfraMediaMount.so", "libclema.so", "libpthread.so.0", "libstdc++.so.6", "libm.so.6", "libdl.so.2", "libgcc_s.so.1", "libc.so.6", "librt.so.1"],
+      "representative_symbols": [
+        "MprIf::EncodeStill",
+        "MprIf::WriteStill",
+        "MprIf::ReadStillSingle",
+        "MprIf::PlayStillSingle",
+        "MprIf::SetRecDefinition",
+        "MprIf::SetRecQuality",
+        "MprIf::SetRecXvYccInfo"
+      ]
+    },
+    {
+      "path": "lib/libBizFw.so",
+      "size_bytes": 332600,
+      "sha256": "5065aa52ac05d3a7de24945a2c7be65c18394b7c9e02ab605476a0afa8fb8a8e",
+      "role": "AVBBC hardware/service channel interfaces for display, effects, SDI, and image operations"
+    },
+    {
+      "path": "lib/libObj.so",
+      "size_bytes": 17436172,
+      "sha256": "8e8a937aed23c2783e7bbee8a4afa2fb4bcd897606f190b17dccadd207d05b6a",
+      "role": "view/media object bridge; imports media and dataflow operations"
+    },
+    {
+      "path": "scenario/CAMERA_SCN_EXTERNAL_RAW_RECORD.so",
+      "size_bytes": 8954,
+      "sha256": "978b4d0b2bd0fe57a310bb3749a6a16ea5e791442825655508d6e5ffdf370dc5",
+      "role": "external RAW record scenario"
+    },
+    {
+      "path": "sabin/sa_jpeg_enc_1core.bin",
+      "size_bytes": 13956,
+      "sha256": "838a2b2d8411509f09b8aae81fd89f7d0e3720916d38c3f6155c0179fa00d312",
+      "role": "named JPEG encoder payload; loader and API unresolved"
+    },
+    {
+      "path": "sabin/sa_jpeg_enc_1unit.bin",
+      "size_bytes": 22404,
+      "sha256": "be63812a7367b6e9492bf8cbbe50f2a32b02f97774d710e05ef60b27ff0cc8dd",
+      "role": "named JPEG encoder payload; loader and API unresolved"
+    },
+    {
+      "path": "sabin/sa_jpeg_dec_1core.bin",
+      "size_bytes": 10756,
+      "sha256": "7ed55b9f0917cf264e8d400e833dc81a415827d08a4cfe0f33c9ac4b47465413",
+      "role": "named JPEG decoder payload; loader and API unresolved"
+    },
+    {
+      "path": "sabin/sa_dcv.bin",
+      "size_bytes": 18564,
+      "sha256": "e50e0ad30719de1d837fe610061afbf48e0fd9ff01990f25ff54d2218234b46a",
+      "role": "named lower-level display/conversion candidate; name-based role only"
+    },
+    {
+      "path": "sabin/sa_kknr.bin",
+      "size_bytes": 66052,
+      "sha256": "5d45d5c27115d20f08ca9f5b12d9eb68b444ba8a8dcd7d805a2be30bd0ee49ce",
+      "role": "named lower-level noise-reduction candidate; name-based role only"
+    },
+    {
+      "path": "sabin/sa_lfnr_minna0.bin",
+      "size_bytes": 22660,
+      "sha256": "f5ebba883520cda73d0a269ed10626ead972c8c26aa516a8b2f5e33f5aef7f04",
+      "role": "named low-frequency noise-reduction candidate; name-based role only"
+    },
+    {
+      "path": "sabin/sa_shapep.bin",
+      "size_bytes": 3076,
+      "sha256": "a2211fbbb11b063349a513b1e3fcdc3ffe63852ee74962bbb0314b7f8c45816d",
+      "role": "named sharpening candidate; name-based role only"
+    },
+    {
+      "path": "sabin/dcv_psf_table_still.bin",
+      "size_bytes": 57848,
+      "sha256": "b3b82d875733c17f9c4193a1208a996421d16eeb97208a92939e9a0c21624a17",
+      "role": "still-mode coefficient/table payload; exact meaning unresolved"
+    },
+    {
+      "path": "sabin/dcv_psf_table_movie.bin",
+      "size_bytes": 10728,
+      "sha256": "1e7f6bb2842bc828143473ae4f9e39e3ceaa407bb1e003215d237014b82d2004",
+      "role": "movie-mode coefficient/table payload; exact meaning unresolved"
+    }
+  ],
+  "next_targets": [
+    "SCALARDAEMON::SystemEventIssuerCameraParameter::setColorMode",
+    "SCALARDAEMON::SystemEventIssuerCamera::setRgbMatrix",
+    "SCALARDAEMON::SystemEventIssuerCamera::setExtendedGammaTable",
+    "SCALARDAEMON::SystemEventIssuerImageFilter::filterArtEffect",
+    "STM::StmMain::rawparseImageInstance",
+    "MprIf::EncodeStill"
+  ]
+}
