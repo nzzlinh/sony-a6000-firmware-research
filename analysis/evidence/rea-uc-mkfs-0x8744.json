@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev_789b57b5376fe2ff2f71d46229f81f69305a85112d9c28b6dbe5396d50187a5b",
+  "subject": {
+    "name": "uc_mkfs.elf",
+    "sha256": "c422eaae45cb38ba5463cebbc945b5b993608633436e310b5d127b00748f102b",
+    "format": "elf",
+    "architecture": "arm",
+    "public_label": "rea-uc-mkfs-0x8744"
+  },
+  "analysis": {
+    "provider": {
+      "id": "ghidra",
+      "name": "Ghidra",
+      "version": "12.1.4"
+    },
+    "profile_digest": "e87c132666812361c9c173067536033b1a9e95723147e4ced29d458510cce9ac",
+    "operation": "analyze_function",
+    "confidence": "observed",
+    "authority": "shipped-artifact"
+  },
+  "procedure": {
+    "address": "0x8744",
+    "name": "FUN_00008744"
+  },
+  "redaction": {
+    "status": "metadata-only",
+    "excluded_fields": [
+      "pseudocode",
+      "assembly",
+      "comments",
+      "callees",
+      "callers",
+      "incoming_references",
+      "outgoing_references",
+      "referenced_strings",
+      "referenced_names",
+      "basic_blocks",
+      "native_api",
+      "native_value_flow"
+    ],
+    "reason": "These fields may reproduce or closely derive from proprietary firmware code or data."
+  },
+  "public_note": "The full REA result is retained in private research storage. Human-reviewed findings are documented in the milestone notes.",
+  "limitations": [
+    "Unresolved computed or indirect flows without target addresses are not represented as reference edges.",
+    "Thunk and external classifications are Ghidra FunctionManager observations; they do not resolve targetless calls.",
+    "Pseudocode and assembly are Ghidra-specific representations, not original source or Hopper-equivalent text.",
+    "Synthetic Ghidra entry-point references without actionable memory sources are omitted."
+  ]
+}

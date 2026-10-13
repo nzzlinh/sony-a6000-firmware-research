@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev_20ec2b44339131d4c8ff74034137c9b6a97371d387773d0fd4fc986f3d729f3a",
+  "subject": {
+    "name": "uc_crc32sum.elf",
+    "sha256": "8e368185be4a074034a3f86a7ff06123ba0936e5cb70fea963009f6f8628f4da",
+    "format": "elf",
+    "architecture": "arm",
+    "public_label": "rea-uc-crc32-0x8b0c"
+  },
+  "analysis": {
+    "provider": {
+      "id": "ghidra",
+      "name": "Ghidra",
+      "version": "12.1.4"
+    },
+    "profile_digest": "e87c132666812361c9c173067536033b1a9e95723147e4ced29d458510cce9ac",
+    "operation": "analyze_function",
+    "confidence": "observed",
+    "authority": "shipped-artifact"
+  },
+  "procedure": {
+    "address": "0x8b0c",
+    "name": "FUN_00008b0c"
+  },
+  "redaction": {
+    "status": "metadata-only",
+    "excluded_fields": [
+      "pseudocode",
+      "assembly",
+      "comments",
+      "callees",
+      "callers",
+      "incoming_references",
+      "outgoing_references",
+      "referenced_strings",
+      "referenced_names",
+      "basic_blocks",
+      "native_api",
+      "native_value_flow"
+    ],
+    "reason": "These fields may reproduce or closely derive from proprietary firmware code or data."
+  },
+  "public_note": "The full REA result is retained in private research storage. Human-reviewed findings are documented in the milestone notes.",
+  "limitations": [
+    "Unresolved computed or indirect flows without target addresses are not represented as reference edges.",
+    "Thunk and external classifications are Ghidra FunctionManager observations; they do not resolve targetless calls.",
+    "Pseudocode and assembly are Ghidra-specific representations, not original source or Hopper-equivalent text.",
+    "Synthetic Ghidra entry-point references without actionable memory sources are omitted."
+  ]
+}

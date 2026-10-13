@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev_fec1a9057bdcadb8faed4baa62218ad10bb346f7ce9560dce8807fede9b8f580",
+  "subject": {
+    "name": "libInfraPtpControl.so",
+    "sha256": "8b9c77a835593d5a963c0b56dc59ebd202648bd4e361524f48f4f2849631b81c",
+    "format": "elf",
+    "architecture": "arm",
+    "public_label": "rea-ptp-transport-init-socket"
+  },
+  "analysis": {
+    "provider": {
+      "id": "ghidra",
+      "name": "Ghidra",
+      "version": "12.1.4"
+    },
+    "profile_digest": "e87c132666812361c9c173067536033b1a9e95723147e4ced29d458510cce9ac",
+    "operation": "analyze_function",
+    "confidence": "observed",
+    "authority": "shipped-artifact"
+  },
+  "procedure": {
+    "address": "0x14a70",
+    "name": "PtptIp::InitSocket"
+  },
+  "redaction": {
+    "status": "metadata-only",
+    "excluded_fields": [
+      "pseudocode",
+      "assembly",
+      "comments",
+      "callees",
+      "callers",
+      "incoming_references",
+      "outgoing_references",
+      "referenced_strings",
+      "referenced_names",
+      "basic_blocks",
+      "native_api",
+      "native_value_flow"
+    ],
+    "reason": "These fields may reproduce or closely derive from proprietary firmware code or data."
+  },
+  "public_note": "The full REA result is retained in private research storage. Human-reviewed findings are documented in the milestone notes.",
+  "limitations": [
+    "Unresolved computed or indirect flows without target addresses are not represented as reference edges.",
+    "Thunk and external classifications are Ghidra FunctionManager observations; they do not resolve targetless calls.",
+    "Pseudocode and assembly are Ghidra-specific representations, not original source or Hopper-equivalent text.",
+    "Synthetic Ghidra entry-point references without actionable memory sources are omitted."
+  ]
+}

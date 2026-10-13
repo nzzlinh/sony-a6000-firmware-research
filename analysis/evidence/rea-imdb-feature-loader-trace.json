@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev_a5d61e09eb075fd0af79fc267dc5754a70d84f8eeb1ca940295d4e935bc4a6f9",
+  "subject": {
+    "name": "libIMDB.so",
+    "sha256": "9ceb21092a4987ec782fd980818aee687cde649af0999608bd6c40e1f46a84ea",
+    "format": "ELF 32-bit ARM EABI5 shared object",
+    "architecture": null,
+    "public_label": "rea-imdb-feature-loader-trace"
+  },
+  "analysis": {
+    "provider": "Ghidra 12.1.4 through REA 6.4.0",
+    "profile_digest": null,
+    "operation": "trace_feature",
+    "confidence": null,
+    "authority": null
+  },
+  "procedure": {},
+  "redaction": {
+    "status": "metadata-only",
+    "excluded_fields": [
+      "pseudocode",
+      "assembly",
+      "comments",
+      "callees",
+      "callers",
+      "incoming_references",
+      "outgoing_references",
+      "referenced_strings",
+      "referenced_names",
+      "basic_blocks",
+      "native_api",
+      "native_value_flow"
+    ],
+    "reason": "These fields may reproduce or closely derive from proprietary firmware code or data."
+  },
+  "public_note": "The full REA result is retained in private research storage. Human-reviewed findings are documented in the milestone notes.",
+  "limitations": [
+    "The reference target was not recovered as part of a named Ghidra procedure.",
+    "String presence does not prove runtime loading.",
+    "The proprietary library remains private; only metadata and the bounded observation are published."
+  ]
+}

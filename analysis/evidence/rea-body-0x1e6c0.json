@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev_d70d2a5542113ceb133023bf9082dae5f438460fcad6c7ff5af8822da7da3839",
+  "subject": {
+    "name": "libupdaterbody.so",
+    "sha256": "8d1dc242decea362c65c6dcaf320046df93f06e2fc97c547b7b250b2cc3057d6",
+    "format": "elf",
+    "architecture": "arm",
+    "public_label": "rea-body-0x1e6c0"
+  },
+  "analysis": {
+    "provider": {
+      "id": "ghidra",
+      "name": "Ghidra",
+      "version": "12.1.4"
+    },
+    "profile_digest": "e87c132666812361c9c173067536033b1a9e95723147e4ced29d458510cce9ac",
+    "operation": "analyze_function",
+    "confidence": "observed",
+    "authority": "shipped-artifact"
+  },
+  "procedure": {
+    "address": "0x1e6c0",
+    "name": "Updater::MountEntry::Mount"
+  },
+  "redaction": {
+    "status": "metadata-only",
+    "excluded_fields": [
+      "pseudocode",
+      "assembly",
+      "comments",
+      "callees",
+      "callers",
+      "incoming_references",
+      "outgoing_references",
+      "referenced_strings",
+      "referenced_names",
+      "basic_blocks",
+      "native_api",
+      "native_value_flow"
+    ],
+    "reason": "These fields may reproduce or closely derive from proprietary firmware code or data."
+  },
+  "public_note": "The full REA result is retained in private research storage. Human-reviewed findings are documented in the milestone notes.",
+  "limitations": [
+    "Unresolved computed or indirect flows without target addresses are not represented as reference edges.",
+    "Thunk and external classifications are Ghidra FunctionManager observations; they do not resolve targetless calls.",
+    "Pseudocode and assembly are Ghidra-specific representations, not original source or Hopper-equivalent text.",
+    "Synthetic Ghidra entry-point references without actionable memory sources are omitted.",
+    "Ghidra Listing reports a terminal call at 0x1e75c to 0x1decc <EXTERNAL>::__cxa_throw (external=false, thunk=true, hasNoReturn=true); fallthrough is excluded by Ghidra's flow model. This records Ghidra's FunctionManager flag, not an independent verification that the callee cannot return."
+  ]
+}

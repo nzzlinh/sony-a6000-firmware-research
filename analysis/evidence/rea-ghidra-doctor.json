@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "evidence_id": null,
+  "subject": {
+    "name": null,
+    "sha256": null,
+    "format": null,
+    "architecture": null,
+    "public_label": "rea-ghidra-doctor"
+  },
+  "analysis": {
+    "provider": null,
+    "profile_digest": null,
+    "operation": null,
+    "confidence": null,
+    "authority": null
+  },
+  "procedure": {},
+  "redaction": {
+    "status": "metadata-only",
+    "excluded_fields": [
+      "pseudocode",
+      "assembly",
+      "comments",
+      "callees",
+      "callers",
+      "incoming_references",
+      "outgoing_references",
+      "referenced_strings",
+      "referenced_names",
+      "basic_blocks",
+      "native_api",
+      "native_value_flow"
+    ],
+    "reason": "These fields may reproduce or closely derive from proprietary firmware code or data."
+  },
+  "public_note": "The full REA result is retained in private research storage. Human-reviewed findings are documented in the milestone notes.",
+  "limitations": null
+}
