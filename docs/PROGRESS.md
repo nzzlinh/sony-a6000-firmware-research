@@ -81,7 +81,7 @@ Can we establish a repeatable native-analysis workflow for the ARM updater and a
 - The helper's call path is documented from option parsing (`0x8950`) through dispatch (`0x89c4`), file CRC calculation (`0x8a94` and `0x8a6c`), record validation (`0x8b0c`), and sum-file parsing (`0x8c64`).
 - The CRC implementation is confirmed as CRC-32/IEEE: reflected table, initial accumulator `0xffffffff`, 128 KiB maximum read blocks, and final complement.
 - The updater XML and shell wrappers show that the same verifier is reused for multiple payload classes before update procedures run.
-- Curated, path-safe REA evidence is archived under [`analysis/evidence`](../analysis/evidence), with the case study in [`04-updater-crc32-case.md`](04-updater-crc32-case.md).
+- Hash-bound, metadata-only REA evidence records are published under [`analysis/evidence`](../analysis/evidence), with full REA output retained in the private research archive and the case study in [`04-updater-crc32-case.md`](04-updater-crc32-case.md).
 
 ### Exit evidence
 

@@ -22,7 +22,9 @@ The work covers acquisition, offline extraction, region mapping, boot and update
 - Begin with offline and read-only analysis.
 - Do not write to camera flash while building the platform map.
 - Keep proprietary firmware images, decrypted trees, raw NAND dumps, recovered APKs, and personal camera data private unless distribution is clearly authorized.
+- Keep raw decompiler pseudocode, assembly, strings, reference graphs, and native value-flow output from proprietary firmware in the private research archive unless distribution is separately reviewed.
 - Publish hashes, offsets, derived metadata, scripts, and explanations so another researcher can reproduce the work from the official source.
+- Apply project licenses only to original scripts, documentation, and annotations; do not grant a project license to Sony or other third-party material.
 - Record the exact camera, firmware version, tool version, command, and input hash for every result.
 
 ## Evidence standard

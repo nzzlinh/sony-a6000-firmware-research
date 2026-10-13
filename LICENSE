@@ -1,0 +1,9 @@
+This repository uses component-specific licensing.
+
+Original scripts are licensed under the MIT License; see LICENSE-CODE.
+Original documentation is licensed under Creative Commons Attribution 4.0
+International; see LICENSE-DOCS.
+
+No license is granted by this repository to Sony firmware, Sony-derived
+decompiler output, Sony trademarks, or other third-party material. See
+THIRD_PARTY_NOTICES.md and analysis/evidence/README.md.

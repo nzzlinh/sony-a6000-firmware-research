@@ -26,7 +26,7 @@ npx -y rea-agents@latest function \
   --provider ghidra --format json
 ```
 
-The same operation was run for the entry path and related functions at `0x889c`, `0x8950`, `0x89c4`, `0x8a60`, `0x8a6c`, `0x8a94`, `0x8b0c`, and `0x8c64`. Curated dossiers are in [`analysis/evidence/`](../analysis/evidence/), and the export helper is [`curate_rea_evidence.py`](../scripts/curate_rea_evidence.py).
+The same operation was run for the entry path and related functions at `0x889c`, `0x8950`, `0x89c4`, `0x8a60`, `0x8a6c`, `0x8a94`, `0x8b0c`, and `0x8c64`. Hash-bound, metadata-only public records are in [`analysis/evidence/`](../analysis/evidence/), and the export helper is [`curate_rea_evidence.py`](../scripts/curate_rea_evidence.py). Full REA results remain in the private research archive.
 
 ## What the helper does
 
@@ -56,7 +56,7 @@ This gives us a confirmed integrity boundary: the updater is a collection of scr
 
 ## Evidence and limits
 
-The public dossiers preserve the REA evidence IDs and Ghidra assembly/decompiler observations:
+The public records preserve the REA evidence IDs and analysis provenance:
 
 - [`0x8950` parser options](../analysis/evidence/rea-uc-crc32-0x8950.json)
 - [`0x89c4` main dispatch](../analysis/evidence/rea-uc-crc32-0x89c4.json)
@@ -65,7 +65,7 @@ The public dossiers preserve the REA evidence IDs and Ghidra assembly/decompiler
 - [`0x8b0c` record verifier](../analysis/evidence/rea-uc-crc32-0x8b0c.json)
 - [`0x8c64` sum-file parser](../analysis/evidence/rea-uc-crc32-0x8c64.json)
 
-The decompiler is evidence of control flow and data use, not Sony source code. The CRC table confirms the algorithm family, while the exact `.sum` field semantics still need correlation with more checksum files and with the updater's shell inputs. No updater was run against a camera during this case study.
+The private decompiler output is evidence of control flow and data use, not Sony source code. The public records preserve only the input hash and analysis provenance. The CRC table confirms the algorithm family, while the exact `.sum` field semantics still need correlation with more checksum files and with the updater's shell inputs. No updater was run against a camera during this case study.
 
 ## Next question
 

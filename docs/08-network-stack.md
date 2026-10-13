@@ -166,4 +166,4 @@ The main unknowns are now narrower: process ownership, caller arguments, service
 - **Unknown:** process load order, public endpoint syntax, authentication/session details, service records, exact OSAL/ORB payload layouts, and cross-version ABI stability.
 - **Not performed:** no camera was connected and no network command or firmware write was issued during this pass.
 
-The public evidence dossiers contain reconstructed pseudocode. They should be checked against their instruction listings and neighboring callers before any implementation is attempted.
+The full REA dossiers remain private and contain reconstructed pseudocode and instruction listings. The public evidence records contain only hash-bound metadata; implementation work should still be checked against the private instruction listings and neighboring callers by an authorized researcher.
