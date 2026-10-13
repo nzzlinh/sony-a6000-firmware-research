@@ -130,6 +130,73 @@ Trace the component that consumes workspace images after `PartitionImageKeyTag` 
 
 ## M5–M8
 
+### M5 — Feature subsystem map
+
+Status: **in progress**
+
+### Question
+
+Which user-space libraries form practical boundaries for USB/PTP, camera-control, live view, and lens research?
+
+### Inputs and prompts
+
+- Firmware input: private `nflasha15` extraction from ILCE-6000 3.21. Every library input is bound by the SHA-256 values in `analysis/exports/firmware-3.21-feature-library-map.json`.
+- Symbol inventory: `readelf --dyn-syms --wide <private-a6000-root>/firmware-3.21/fwtool-output/firmware.tar_unpacked/0700_part_image/dev/nflasha15_unpacked_unpacked/lib/<library>`.
+- PTP search: `npx -y rea-agents@latest search <private-a6000-root>/.../libInfraPtpControl.so PTPT_init --kind procedures --provider ghidra --format json`.
+- PTP function: `npx -y rea-agents@latest function <private-a6000-root>/.../libInfraPtpControl.so PtptIp::InitSocket --provider ghidra --format json`.
+- Web API search/function: search `wa_job_startLiveview`, then analyze `WebApiUser::WebApi::wa_job_startLiveview_cmd` with the same REA provider and output format.
+- Lens search/function: search `LensCommunicator`, then analyze `LensCommunicator::InitCmd` with the same REA provider and output format.
+
+### Achievements
+
+- Mapped six named libraries from the private `nflasha15` image and published their sizes, SHA-256 digests, roles, and selected dynamic symbols in `analysis/exports/firmware-3.21-feature-library-map.json`.
+- Confirmed separate PTP transport entry points for USB, remote, and IP modes in `libInfraPtpControl.so`.
+- Used REA/Ghidra on `PtptIp::InitSocket`; the reconstructed path allocates a 64 KiB buffer, creates an IPv4 stream socket, binds and listens, then posts an asynchronous message.
+- Mapped the PTP extension-command layer, MTP server, and mass-storage server as adjacent USB-facing research targets from their retained symbols.
+- Mapped the web API job layer, including live view, still capture, movie recording, exposure, shutter, focus, white balance, storage, and camera-function handlers.
+- Used REA/Ghidra on `wa_job_startLiveview_cmd`; it logs the request, copies a `WebApiIntMsg`, and forwards it to the internal ORB service through `sendMsgToOrb`.
+- Mapped the lens communicator's initialization, command/event, supported-command, mounted-lens, backup, and transfer-completion boundaries.
+- Used REA/Ghidra on `LensCommunicator::InitCmd`; it allocates and fills an OSAL message, sends it synchronously, checks the response, stores a returned value, and releases the message.
+- Recorded `DT_NEEDED` and selected undefined-symbol metadata for all six libraries. This distinguishes direct library dependencies such as MTP → `libptp.so` and extension-command → `libUsbControl.so` from broader process-level symbol sharing.
+- Found all six mapped library names in `libIMDB.so` and found `/usr/lib/libInfraWebApi.so` in `bin/orb-server`; recorded both as host candidates with explicit limitations because string presence does not prove runtime loading.
+- REA evidence now shows `libIMDB.so` is a target-selection registry candidate: `IMDB_find_entry` matches a 16-bit target ID and bitmask in fixed-size records, and `IMDB_find_target_bit` maps target names to bit positions.
+- Identified `libOnDemandLoader.so` as a separate program-load component with singleton initialization and load-program manager methods; its relationship to feature libraries is still unknown.
+- Added a public subsystem map with confidence and limitations. Static symbol presence is treated as confirmed; call-graph ownership and runtime use remain open questions.
+
+### Confidence and limitations
+
+- **Confirmed:** the named libraries, sizes, hashes, exported symbols, and the three analyzed function bodies belong to the private 3.21 extraction.
+- **Strong inference:** the PTP, extension-command, MTP, and mass-storage libraries form adjacent USB-facing service boundaries; direct `DT_NEEDED` edges are recorded, while caller and load-order edges remain incomplete.
+- **Unknown:** host process ownership, runtime load order, protocol field meanings, and cross-version stability.
+
+### Exit evidence so far
+
+- `docs/06-subsystem-map.md`
+- `analysis/exports/firmware-3.21-feature-library-map.json`
+- `analysis/exports/firmware-3.21-feature-library-dependencies.json`
+- `analysis/exports/firmware-3.21-feature-host-candidates.json`
+- `analysis/evidence/rea-ptp-transport-init-socket.json`
+- `analysis/evidence/rea-webapi-start-liveview-command.json`
+- `analysis/evidence/rea-lens-init-command.json`
+- `analysis/evidence/rea-imdb-feature-loader-trace.json`
+- `analysis/evidence/rea-imdb-find-entry.json`
+- `analysis/evidence/rea-imdb-find-target-bit.json`
+- `analysis/evidence/rea-ondemand-loader-init.json`
+
+### Next action
+
+Record relocation and caller edges for the PTP, web API, and lens libraries. Then inspect startup configuration and compare the same symbol families across another official firmware package before attempting passive protocol observation.
+
+## M6 — Runtime and protocol observation
+
+Status: **queued**
+
+## M7 — Cross-version comparison and porting boundaries
+
+Status: **queued**
+
+## M8 — Reference-quality porting guide
+
 Status: **queued**
 
 Each milestone will add a dated entry containing the question, inputs and hashes, commands or REA prompts, findings, confidence, limitations, artifacts, and next question.

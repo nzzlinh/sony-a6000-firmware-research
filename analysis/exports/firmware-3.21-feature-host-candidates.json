@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "firmware": "ILCE-6000 3.21",
+  "partition": "nflasha15",
+  "method": "Recursive byte-string search followed by ELF metadata inspection",
+  "source_policy": "Host-candidate metadata only; proprietary executables remain private.",
+  "candidates": [
+    {
+      "path": "lib/libIMDB.so",
+      "size_bytes": 24656,
+      "sha256": "9ceb21092a4987ec782fd980818aee687cde649af0999608bd6c40e1f46a84ea",
+      "evidence": "Contains strings naming all six mapped feature libraries at file offsets 0x373c, 0x376f, 0x3a09, 0x3b23, 0x3d0a, and 0x3d44; exports IMDB_find_entry, IMDB_get_entries, and IMDB_find_target_bit.",
+      "confidence": "strong inference",
+      "interpretation": "Target-selection registry candidate. REA shows IMDB_find_entry scanning records by a 16-bit target ID and bitmask, while IMDB_find_target_bit maps a target-name string to one bit.",
+      "rea_evidence": ["analysis/evidence/rea-imdb-find-entry.json", "analysis/evidence/rea-imdb-find-target-bit.json"],
+      "limitation": "The registry's caller and relationship to dynamic loading remain unproven."
+    },
+    {
+      "path": "bin/orb-server",
+      "size_bytes": 3680104,
+      "sha256": "2ef500ba5871b8017b94ef2af4788eb8c27e1614e6510db8f8b1839ab70ad4c6",
+      "evidence": "Contains the string /usr/lib/libInfraWebApi.so at file offset 0x2f389c.",
+      "confidence": "working hypothesis",
+      "interpretation": "Potential web API host or configuration consumer.",
+      "limitation": "The executable's DT_NEEDED list does not include libInfraWebApi.so, and no dynamic-loader call has yet been tied to this string."
+    },
+    {
+      "path": "lib/libOnDemandLoader.so",
+      "size_bytes": 38212,
+      "sha256": "4d1c6674070be9d144070f6a2955c1cbcc18f31c0ba93d0becc643f601ac4c08",
+      "evidence": "Exports InfraOnDemandLoader::Initialize, OnDemandLoaderInitialize, load-program manager methods, and load-time diagnostics.",
+      "confidence": "confirmed as a separate on-demand loader component",
+      "interpretation": "Potential program or firmware-image loader boundary.",
+      "rea_evidence": ["analysis/evidence/rea-ondemand-loader-init.json"],
+      "limitation": "No evidence yet connects this component to the feature-library names in libIMDB.so."
+    }
+  ],
+  "next_probe": "Use relocation and procedure-reference analysis around each string, then inspect the process startup configuration for explicit library loading."
+}

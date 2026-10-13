@@ -23,6 +23,18 @@ This ledger separates information verified in this repository from external info
 | The common updater extractor streams partition images into workspace files; the analyzed image extractor does not issue a NAND write itself | REA/Ghidra evidence at `BaseNewFirmwareFile::Extract`, `NewFirmwareImageFile::extractFile`, and `extractImageFile` | Confirmed locally |
 | Mount entries resolve configured device nodes and call Linux `mount()` with `posix_attr` plus mode-dependent synchronization options | REA/Ghidra evidence in `libupdaterbody.so` and `libupdatercommon.so` | Confirmed locally |
 | The updater checksum key post hook mounts the setting partition, removes `/tmp_updater/updater/current`, and unmounts it after a successful procedure | REA/Ghidra evidence at `0x20250` | Confirmed locally |
+| `nflasha15` contains a PTP transport library with common, USB, remote, and IP init/data/event APIs | `analysis/exports/firmware-3.21-feature-library-map.json`; private `libInfraPtpControl.so` hash `8b9c77a835593d5a963c0b56dc59ebd202648bd4e361524f48f4f2849631b81c` | Confirmed locally |
+| `PtptIp::InitSocket` allocates a 64 KiB buffer, creates an IPv4 stream socket, binds/listens, and posts an asynchronous message | REA/Ghidra evidence in `analysis/evidence/rea-ptp-transport-init-socket.json` | Confirmed locally; socket field semantics remain incomplete |
+| `nflasha15` has separate PTP extension-command, MTP, and mass-storage server libraries with command, media, filesystem, and VBUS state-machine symbols | `analysis/exports/firmware-3.21-feature-library-map.json` and private ELF dynamic symbols | Confirmed locally as symbol metadata; direct call edges remain unverified |
+| `libInfraWebApi.so` exports named command/event/completion jobs for live view, still capture, movie recording, exposure, shutter, focus, white balance, storage, and camera-function operations | `analysis/exports/firmware-3.21-feature-library-map.json` and private ELF dynamic symbols | Confirmed locally as symbol metadata |
+| `wa_job_startLiveview_cmd` forwards a copied `WebApiIntMsg` to the internal ORB service after logging request fields | REA/Ghidra evidence in `analysis/evidence/rea-webapi-start-liveview-command.json` | Confirmed locally; ORB message field semantics remain unknown |
+| `libInfraLensCommunicator.so` exposes lens command/event, supported-command, mounted-lens, backup, and transfer-completion boundaries | `analysis/exports/firmware-3.21-feature-library-map.json` and private ELF dynamic symbols | Confirmed locally as symbol metadata |
+| `LensCommunicator::InitCmd` sends an initialized OSAL message synchronously and propagates the returned value/status | REA/Ghidra evidence in `analysis/evidence/rea-lens-init-command.json` | Confirmed locally; message field meanings remain unknown |
+| MTP directly declares `libptp.so`; the PTP extension library directly declares `libUsbControl.so` and imports PTP packet helpers | `analysis/exports/firmware-3.21-feature-library-dependencies.json` | Confirmed locally from ELF metadata |
+| `libIMDB.so` contains strings naming all six mapped feature libraries | `analysis/exports/firmware-3.21-feature-host-candidates.json` and `analysis/evidence/rea-imdb-feature-loader-trace.json` | Confirmed locally as string metadata; runtime loading is unproven |
+| `libIMDB.so` exports target-selection functions; `IMDB_find_entry` scans records by target ID and mask, and `IMDB_find_target_bit` maps target names to bit positions | `analysis/evidence/rea-imdb-find-entry.json` and `analysis/evidence/rea-imdb-find-target-bit.json` | Confirmed locally; registry callers remain unknown |
+| `bin/orb-server` contains `/usr/lib/libInfraWebApi.so` but does not list it in `DT_NEEDED` | `analysis/exports/firmware-3.21-feature-host-candidates.json` | Confirmed locally; host ownership is a working hypothesis |
+| `libOnDemandLoader.so` contains singleton initialization and load-program manager methods | `analysis/exports/firmware-3.21-feature-host-candidates.json` and `analysis/evidence/rea-ondemand-loader-init.json` | Confirmed locally; relationship to feature-library loading is unknown |
 
 ## Prior-art findings awaiting reproduction
 
@@ -43,6 +55,11 @@ These are starting hypotheses. They become findings of this repository only afte
 - A complete platform map will require both updater/package analysis and runtime observations.
 - The updater XML is a declarative procedure graph, while shell scripts provide the action-mode and device-mount policy around native helper binaries. This is a strong inference from the XML-to-shell call structure and should be checked against the updater entrypoint.
 - `libupdaterbody.so` probably represents the stable control plane of the updater body, with product-specific behavior implemented by key tags, built-in plugins, shell modules, and optional DLL plugins. The class inventory and call path support this interpretation; the dynamic plugin set still needs enumeration.
+- The PTP control, extension-command, MTP, and mass-storage libraries probably form a USB-facing service stack, but the current map only proves named interfaces and not direct runtime ownership.
+- The web API job handlers probably form a stable message boundary for camera-control features; the live-view case shows forwarding into an internal ORB service, while the sensor and encoder implementation remains downstream.
+- `libIMDB.so` may be a feature-library registry or selection point because it names all six libraries; the absence of a recovered loader procedure leaves this as a strong inference only.
+- `orb-server` may consume the web API library through configuration or an indirect loader path because it contains the library pathname without a `DT_NEEDED` edge; this remains a working hypothesis.
+- `libIMDB.so` likely stores target-selection metadata rather than directly loading every feature library; its exported lookup functions and fixed-size record scan support this narrower interpretation.
 
 ## Unknowns
 
@@ -50,6 +67,10 @@ These are starting hypotheses. They become findings of this repository only afte
 - Which firmware versions are practical for comparison.
 - Which first feature offers the best value with the lowest camera risk.
 - Which native helper writes each named NAND region, and how the action mode is selected by the update loader.
+- Which processes load the feature libraries, and which `DT_NEEDED` or relocation edges connect the transport, command, camera-control, and lens layers.
+- What the PTP extension command IDs, ORB message IDs, and lens message fields mean on a live camera.
+- Whether the `libIMDB.so` and `orb-server` string references correspond to `dlopen`, a static registry, diagnostic data, or another startup mechanism.
+- Which component consumes the `IMDB_find_entry` result and how target bits select optional Sony modules.
 
 ## Claim record format
 
